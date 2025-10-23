@@ -1,0 +1,139 @@
+using System;
+using System.Data;
+using System.Text.RegularExpressions;
+using System.Windows;
+using Microsoft.Data.SqlClient;
+
+namespace Zenskar_MAMS.Windows
+{
+    public partial class Register : Window
+    {
+        private readonly DBContext _dbContext;
+
+        public Register()
+        {
+            InitializeComponent();
+            _dbContext = new DBContext();
+        }
+
+        private void BtnRegister_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ValidateInput())
+                return;
+
+            try
+            {
+                // Generate unique login ID
+                string loginId = GenerateLoginId(TxtUserName.Text);
+                
+                // Insert new user
+                var parameters = new SqlParameter[]
+                {
+                    new("@loginId", loginId),
+                    new("@userName", TxtUserName.Text),
+                    new("@contactNumber", TxtContactNumber.Text),
+                    new("@password", TxtNewPassword.Password),
+                    new("@userType", RbMaster.IsChecked == true ? "Master" : "Instructor"),
+                    new("@status", "Pending Approval"),
+                    new("@createdDate", DateTime.Now)
+                };
+
+                string insertQuery = @"
+                    INSERT INTO User_Table (login_ID, User_Name, Contact_Number, Password, User_Type, Status, Created_Date)
+                    VALUES (@loginId, @userName, @contactNumber, @password, @userType, @status, @createdDate)";
+
+                _dbContext.InsertData(insertQuery, parameters);
+
+                // Create registration request
+                var requestParams = new SqlParameter[]
+                {
+                    new("@requestType", "Registration"),
+                    new("@requestedBy", TxtUserName.Text),
+                    new("@requestedDate", DateTime.Now)
+                };
+
+                string requestQuery = @"
+                    INSERT INTO Requests (RequestType, RequestedBy, Status, RequestedDate)
+                    VALUES (@requestType, @requestedBy, 'Open', @requestedDate)";
+
+                _dbContext.InsertData(requestQuery, requestParams);
+
+                MessageBox.Show($"Registration successful!\nYour Login ID is: {loginId}\n\nPlease wait for admin approval before logging in.",
+                    "Registration Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                DialogResult = true;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Registration failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private bool ValidateInput()
+        {
+            if (string.IsNullOrWhiteSpace(TxtUserName.Text))
+            {
+                MessageBox.Show("Please enter a user name.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (!Regex.IsMatch(TxtContactNumber.Text, @"^\d{10}$"))
+            {
+                MessageBox.Show("Please enter a valid 10-digit contact number.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (TxtNewPassword.Password.Length < 6)
+            {
+                MessageBox.Show("Password must be at least 6 characters long.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (TxtNewPassword.Password != TxtConfirmPassword.Password)
+            {
+                MessageBox.Show("Passwords do not match.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (RbMaster.IsChecked != true && RbInstructor.IsChecked != true)
+            {
+                MessageBox.Show("Please select a user type.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        private string GenerateLoginId(string userName)
+        {
+            // Remove spaces and special characters
+            string baseName = Regex.Replace(userName, @"[^a-zA-Z]", "").ToUpper();
+            
+            // Take first 4 characters (or pad with 'X' if too short)
+            baseName = (baseName + "XXXX").Substring(0, 4);
+            
+            // Get current max number for this base
+            string query = $"SELECT MAX(login_ID) FROM User_Table WHERE login_ID LIKE '{baseName}%'";
+            var result = _dbContext.SelectData(query);
+            
+            int nextNum = 1;
+            if (result.Rows[0][0] != DBNull.Value)
+            {
+                string lastId = result.Rows[0][0].ToString();
+                if (int.TryParse(lastId.Substring(4), out int lastNum))
+                {
+                    nextNum = lastNum + 1;
+                }
+            }
+
+            return $"{baseName}{nextNum:D3}";
+        }
+
+        private void BtnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
+        }
+    }
+}

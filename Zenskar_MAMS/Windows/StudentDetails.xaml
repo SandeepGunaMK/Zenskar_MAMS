@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="Zenskar_MAMS.Windows.StudentDetails"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Student Details - Zenskar MAMS" 
+        Height="700" 
+        Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource SecondaryBackgroundBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" 
+                    Background="{StaticResource PrimaryBackgroundBrush}">
+            <!--<Button x:Name="BtnBack"
+                    Content="Back"
+                    Click="BtnBack_Click"
+                    Margin="500,10,20,10"
+                    Style="{StaticResource ModernButtonStyle}" Width="30"/>-->
+            <TextBlock x:Name="HeaderText"
+                       HorizontalAlignment="Center"
+                      Text="Student Details"
+                      Foreground="{StaticResource TextPrimaryBrush}"
+                      FontSize="24"
+                      Margin="20,-10" Width="279"/>
+        </StackPanel>
+
+        <!-- Student Details Form -->
+        <ScrollViewer Grid.Row="1" 
+                     Margin="20"
+                     VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Name -->
+                <TextBlock Foreground="{StaticResource TextPrimaryBrush}" Grid.Row="0" Grid.Column="0" 
+                         Text="Name:" 
+                         Margin="5"/>
+                <TextBox Grid.Row="0" Grid.Column="1" 
+                        x:Name="TxtName"
+                        Margin="5"/>
+
+                <!-- DOB -->
+                <TextBlock Foreground="{StaticResource TextPrimaryBrush}" Grid.Row="1" Grid.Column="0" 
+                         Text="Date of Birth:" 
+                         Margin="5"/>
+                <DatePicker Grid.Row="1" Grid.Column="1" 
+                          x:Name="DpDOB"
+                          Margin="5,5,350,5"/>
+
+                <!-- Age -->
+                <TextBlock Foreground="{StaticResource TextPrimaryBrush}" Grid.Row="2" Grid.Column="0" 
+                         Text="Age:" 
+                         Margin="5"/>
+                <TextBox Grid.Row="2" Grid.Column="1" 
+                        x:Name="TxtAge"
+                        IsReadOnly="True"
+                        Margin="5"/>
+
+                <!-- Gender -->
+                <TextBlock Grid.Row="3" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Gender:" 
+                         Margin="5"/>
+                <ComboBox Grid.Row="3" Grid.Column="1" 
+                         x:Name="CmbGender"
+                         Margin="5">
+                    <ComboBoxItem Content="Male"/>
+                    <ComboBoxItem Content="Female"/>
+                    <ComboBoxItem Content="Other"/>
+                </ComboBox>
+
+                <!-- Location -->
+                <TextBlock Grid.Row="4" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Location:" 
+                         Margin="5"/>
+                <TextBox Grid.Row="4" Grid.Column="1" 
+                        x:Name="TxtLocation"
+                        Margin="5"/>
+
+                <!-- Belt -->
+                <TextBlock Grid.Row="5" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Belt:" 
+                         Margin="5"/>
+                <ComboBox Grid.Row="5" Grid.Column="1" 
+                         x:Name="CmbBelt"
+                         Margin="5">
+                    <ComboBoxItem Content="All"/>
+                    <ComboBoxItem Content="White"/>
+                    <ComboBoxItem Content="White Senior"/>
+                    <ComboBoxItem Content="Yellow"/>
+                    <ComboBoxItem Content="Blue"/>
+                    <ComboBoxItem Content="Blue Senior"/>
+                    <ComboBoxItem Content="Green"/>
+                    <ComboBoxItem Content="Green Senior"/>
+                    <ComboBoxItem Content="Brown"/>
+                    <ComboBoxItem Content="Brown Senior"/>
+                    <ComboBoxItem Content="Black"/>
+                </ComboBox>
+
+                <!-- Instructor -->
+                <TextBlock Grid.Row="6" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Instructor:" 
+                         Margin="5"/>
+                <ComboBox Grid.Row="6" Grid.Column="1" 
+                         x:Name="CmbInstructor"
+                         Margin="5"/>
+
+                <!-- Master -->
+                <TextBlock Grid.Row="7" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Master:" 
+                         Margin="5"/>
+                <ComboBox Grid.Row="7" Grid.Column="1" 
+                         x:Name="CmbMaster"
+                         Margin="5"/>
+
+                <!-- Contact Number -->
+                <TextBlock Grid.Row="8" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Contact Number:" 
+                         Margin="5"/>
+                <TextBox Grid.Row="8" Grid.Column="1" 
+                        x:Name="TxtContactNumber"
+                        Margin="5"/>
+
+                <!-- Parents Name -->
+                <TextBlock Grid.Row="9" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Parents Name:" 
+                         Margin="5"/>
+                <TextBox Grid.Row="9" Grid.Column="1" 
+                        x:Name="TxtParentsName"
+                        Margin="5"/>
+
+                <!-- Medical Conditions -->
+                <TextBlock Grid.Row="10" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Medical Conditions:" 
+                         Margin="5"/>
+                <TextBox Grid.Row="10" Grid.Column="1" 
+                        x:Name="TxtMedicalConditions"
+                        Margin="5"/>
+
+                <!-- Last Exam Date -->
+                <TextBlock Grid.Row="11" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}" 
+                         Text="Last Exam Date:" 
+                         Margin="5"/>
+                <DatePicker Grid.Row="11" Grid.Column="1" 
+                          x:Name="DpLastExamDate"
+                          Margin="5,0,350,0"/>
+
+                <!-- Attempts -->
+                <TextBlock Grid.Row="12" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Attempts:" 
+                         Margin="5"/>
+                <TextBox Grid.Row="12" Grid.Column="1" 
+                        x:Name="TxtAttempts"
+                        Margin="5,0,350,0"/>
+
+                <!-- Date of Joining -->
+                <TextBlock Grid.Row="13" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Date of Joining:" 
+                         Margin="5"/>
+                <DatePicker Grid.Row="13" Grid.Column="1" 
+                          x:Name="DpDateOfJoining"
+                          Margin="5"/>
+
+                <!-- Comments -->
+                <TextBlock Grid.Row="14" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Comments:" 
+                         Margin="5"/>
+                <TextBox Grid.Row="14" Grid.Column="1" 
+                        x:Name="TxtComments"
+                        TextWrapping="Wrap"
+                        AcceptsReturn="True"
+                        Height="60"
+                        Margin="5"/>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="10">
+            <Button x:Name="BtnSave"
+                    Content="Save"
+                    Click="BtnSave_Click"
+                    Style="{StaticResource ModernButtonStyle}"
+                    Margin="0,0,10,0"/>
+            <Button x:Name="BtnRequestUpdate"
+                    Content="Request Update"
+                    Click="BtnRequestUpdate_Click"
+                    Style="{StaticResource ModernButtonStyle}"
+                    Margin="0,0,10,0"
+                    Visibility="Collapsed"/>
+            <Button Content="Cancel"
+                    Click="BtnCancel_Click"
+                    Style="{StaticResource ModernButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+</Window>

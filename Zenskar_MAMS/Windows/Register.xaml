@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="Zenskar_MAMS.Windows.Register"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Register - Zenskar MAMS" 
+        Height="700" 
+        Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource PrimaryBackgroundBrush}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="450"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left side - Decorative Panel -->
+        <Border Grid.Column="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="{StaticResource AccentPurple}" Offset="0"/>
+                    <GradientStop Color="{StaticResource AccentPink}" Offset="0.5"/>
+                    <GradientStop Color="{StaticResource AccentBlue}" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- System Name -->
+                <StackPanel Grid.Row="1"
+                          HorizontalAlignment="Center">
+                    <TextBlock Text="Join Our"
+                             FontSize="36"
+                             FontWeight="Light"
+                             Foreground="{StaticResource TextPrimaryBrush}"
+                             HorizontalAlignment="Center"/>
+                    <TextBlock Text="ZENSKAR"
+                             FontSize="64"
+                             FontWeight="Bold"
+                             Foreground="{StaticResource TextPrimaryBrush}"
+                             HorizontalAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect BlurRadius="30" 
+                                            ShadowDepth="0" 
+                                            Color="Black"
+                                            Opacity="0.5"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                    <TextBlock Text="Community"
+                             FontSize="36"
+                             FontWeight="Light"
+                             Foreground="{StaticResource TextPrimaryBrush}"
+                             HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Right side - Registration Form -->
+        <Border Grid.Column="1" 
+                Background="{StaticResource SecondaryBackgroundBrush}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,-43,0,0">
+                <StackPanel Margin="40">
+                    <!-- Header -->
+                    <TextBlock Text="Create Account"
+                             Style="{StaticResource ModernHeaderStyle}"
+                             Margin="0,20,0,40"/>
+
+                    <!-- User Name -->
+                    <TextBlock Text="User Name"
+                             Style="{StaticResource ModernLabelStyle}"/>
+                    <TextBox x:Name="TxtUserName"
+                            Style="{StaticResource ModernTextBoxStyle}"
+                            Margin="0,0,0,20"/>
+
+                    <!-- Contact Number -->
+                    <TextBlock Text="Contact Number"
+                             Style="{StaticResource ModernLabelStyle}"/>
+                    <TextBox x:Name="TxtContactNumber"
+                            Style="{StaticResource ModernTextBoxStyle}"
+                            Margin="0,0,0,20"/>
+
+                    <!-- New Password -->
+                    <TextBlock Text="New Password"
+                             Style="{StaticResource ModernLabelStyle}"/>
+                    <PasswordBox x:Name="TxtNewPassword"
+                               Style="{StaticResource ModernPasswordBoxStyle}"
+                               Margin="0,0,0,20"/>
+
+                    <!-- Confirm Password -->
+                    <TextBlock Text="Confirm Password"
+                             Style="{StaticResource ModernLabelStyle}"/>
+                    <PasswordBox x:Name="TxtConfirmPassword"
+                               Style="{StaticResource ModernPasswordBoxStyle}"
+                               Margin="0,0,0,20"/>
+
+                    <!-- User Type -->
+                    <TextBlock Text="User Type"
+                             Style="{StaticResource ModernLabelStyle}"/>
+                    <Grid Margin="0,10,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <RadioButton x:Name="RbMaster"
+                                   Content="Master"
+                                   Style="{StaticResource ModernRadioButtonStyle}"
+                                   GroupName="UserType"
+                                   HorizontalAlignment="Center"/>
+                        
+                        <RadioButton x:Name="RbInstructor"
+                                   Grid.Column="1"
+                                   Content="Instructor"
+                                   Style="{StaticResource ModernRadioButtonStyle}"
+                                   GroupName="UserType"
+                                   HorizontalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Generated Login ID -->
+                    <Border Background="{StaticResource SurfaceBrush}"
+                            CornerRadius="8"
+                            Padding="20"
+                            Margin="0,0,0,30">
+                        <StackPanel>
+                            <TextBlock Text="Your Login ID"
+                                     Style="{StaticResource ModernLabelStyle}"
+                                     FontWeight="SemiBold"/>
+                            <TextBlock x:Name="TxtGeneratedLoginId"
+                                     Text="[Will be generated on registration]"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     FontFamily="Consolas"
+                                     Margin="0,5,0,0">
+                                <TextBlock.Effect>
+                                    <DropShadowEffect BlurRadius="10"
+                                                    ShadowDepth="0"
+                                                    Color="{StaticResource AccentBlue}"
+                                                    Opacity="0.3"/>
+                                </TextBlock.Effect>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Buttons -->
+                    <Button Content="Register"
+                            Click="BtnRegister_Click"
+                            Height="45"
+                            Margin="0,0,0,15">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="{StaticResource AccentBlue}" Offset="0"/>
+                                <GradientStop Color="{StaticResource AccentPurple}" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+
+                    <Button Content="Cancel"
+                            Click="BtnCancel_Click"
+                            Height="45"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Background="{StaticResource SurfaceBrush}"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

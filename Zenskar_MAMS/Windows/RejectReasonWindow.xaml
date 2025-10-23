@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="Zenskar_MAMS.Windows.RejectReasonWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Enter Rejection Reason" 
+        Height="250" 
+        Width="400"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource SecondaryBackgroundBrush}">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Foreground="{StaticResource TextPrimaryBrush}" Text="Please enter the reason for rejection:"
+                  Margin="0,0,0,5"/>
+
+        <TextBox Grid.Row="1"
+                 x:Name="TxtReason"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 Margin="0,0,0,10"/>
+
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="OK"
+                    Click="BtnOK_Click"
+                    Style="{StaticResource ModernButtonStyle}"
+                    Width="75"
+                    Margin="0,0,10,0"/>
+            <Button Content="Cancel"
+                    Click="BtnCancel_Click"
+                    Style="{StaticResource ModernButtonStyle}"
+                    Width="75"/>
+        </StackPanel>
+    </Grid>
+</Window>

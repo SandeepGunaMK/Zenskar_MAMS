@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="Zenskar_MAMS.Windows.Login"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Login - Zenskar MAMS" 
+        Height="600" 
+        Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource PrimaryBackgroundBrush}">
+    <Grid>
+        <!-- Split the window into two columns -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="400"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left side - Decorative Panel -->
+        <Border Grid.Column="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="{StaticResource AccentBlue}" Offset="0"/>
+                    <GradientStop Color="{StaticResource AccentPurple}" Offset="0.5"/>
+                    <GradientStop Color="{StaticResource AccentPink}" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- System Name -->
+                <TextBlock Text="ZENSKAR"
+                         Grid.Row="1"
+                         FontSize="48"
+                         FontWeight="Bold"
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center">
+                    <TextBlock.Effect>
+                        <DropShadowEffect BlurRadius="30" 
+                                        ShadowDepth="0" 
+                                        Color="Black"
+                                        Opacity="0.5"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+            </Grid>
+        </Border>
+
+        <!-- Right side - Login Form -->
+        <Border Grid.Column="1" 
+                Background="{StaticResource SecondaryBackgroundBrush}"
+                Padding="40">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <TextBlock Text="Welcome Back"
+                         Style="{StaticResource ModernHeaderStyle}"
+                         Margin="0,20,0,40"/>
+
+                <!-- Login Form -->
+                <StackPanel Grid.Row="1" 
+                          VerticalAlignment="Center">
+                    <!-- Login ID -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Login ID"
+                                 Style="{StaticResource ModernLabelStyle}"/>
+                        <TextBox x:Name="TxtLoginId"
+                                Style="{StaticResource ModernTextBoxStyle}"/>
+                    </StackPanel>
+
+                    <!-- Password -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Password"
+                                 Style="{StaticResource ModernLabelStyle}"/>
+                        <PasswordBox x:Name="TxtPassword"
+                                   Style="{StaticResource ModernPasswordBoxStyle}"/>
+                    </StackPanel>
+
+                    <!-- Login Button -->
+                    <Button Content="Login"
+                            Click="BtnLogin_Click"
+                            Height="45">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="{StaticResource AccentBlue}" Offset="0"/>
+                                <GradientStop Color="{StaticResource AccentPurple}" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                </StackPanel>
+
+                <!-- Register Link -->
+                <StackPanel Grid.Row="2" 
+                          HorizontalAlignment="Center"
+                          Orientation="Horizontal"
+                          Margin="0,0,0,20">
+                    <TextBlock Text="Don't have an account? "
+                             Foreground="{StaticResource TextSecondaryBrush}"/>
+                    <Button Content="Register"
+                            Click="BtnRegister_Click"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Background="Transparent"
+                            Padding="5,0"
+                            Margin="-5,0,0,0">
+                        <Button.Foreground>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="{StaticResource AccentCyan}" Offset="0"/>
+                                <GradientStop Color="{StaticResource AccentBlue}" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Foreground>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

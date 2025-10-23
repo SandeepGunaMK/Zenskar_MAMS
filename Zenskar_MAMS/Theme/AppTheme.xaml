@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    
+    <!-- Default Style Overrides -->
+    <Style TargetType="{x:Type Window}" BasedOn="{StaticResource ModernWindowStyle}"/>
+    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButtonStyle}"/>
+    <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource ModernTextBoxStyle}"/>
+    <Style TargetType="{x:Type PasswordBox}" BasedOn="{StaticResource ModernPasswordBoxStyle}"/>
+    <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ModernComboBoxStyle}"/>
+    <Style TargetType="{x:Type ListBox}" BasedOn="{StaticResource ModernListBoxStyle}"/>
+    <Style TargetType="{x:Type DataGrid}" BasedOn="{StaticResource ModernDataGridStyle}"/>
+    <Style TargetType="{x:Type RadioButton}" BasedOn="{StaticResource ModernRadioButtonStyle}"/>
+    
+    <!-- Default Values -->
+    <sys:Double x:Key="DefaultFontSize">14</sys:Double>
+    <sys:Double x:Key="HeaderFontSize">24</sys:Double>
+    <Thickness x:Key="DefaultMargin">10</Thickness>
+    <Thickness x:Key="DefaultPadding">10</Thickness>
+    
+</ResourceDictionary>
