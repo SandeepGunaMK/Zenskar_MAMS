@@ -4,6 +4,9 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Windows.Input;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -12,6 +15,7 @@ namespace Zenskar_MAMS.Windows
         private readonly DBContext _dbContext;
         private readonly string _currentUserType;
         private readonly string _currentUserName;
+        private static readonly RoutedCommand ApproveCommand = new RoutedCommand();
 
         public RequestsWindow(string userType, string userName)
         {
@@ -20,7 +24,13 @@ namespace Zenskar_MAMS.Windows
             _currentUserType = userType;
             _currentUserName = userName;
 
-            ConfigurePermissions();
+            // Command binding for the approve/view menu item
+            CommandBinding commandBinding = new CommandBinding(
+                ApproveCommand,
+                MenuItemApprove_Click
+            );
+            this.CommandBindings.Add(commandBinding);
+
             LoadRequests();
         }
         private void BtnBack_Click(object sender, RoutedEventArgs e)
@@ -197,25 +207,91 @@ namespace Zenskar_MAMS.Windows
             }
         }
 
-        private void MenuItemApprove_Click(object sender, RoutedEventArgs e)
+        public void MenuItemApprove_Click(object sender, RoutedEventArgs e)
         {
             if (!CanApproveRequest())
                 return;
 
             if (RequestsGrid.SelectedItem is DataRowView row)
             {
-                if (MessageBox.Show("Are you sure you want to approve this request?", "Confirm Approval",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                try
                 {
-                    try
+                    if (row["RequestType"].ToString() == "Update")
+                    {
+                        // Get current student data
+                        var studentId = Convert.ToInt32(row["Student_ID"]);
+                        var parameters = new SqlParameter[] { new("@studentId", studentId) };
+                        string query = "SELECT * FROM Student_Data WHERE Student_ID = @studentId";
+                        var result = _dbContext.SelectData(query, parameters);
+
+                        if (result.Rows.Count > 0)
+                        {
+                            var currentValues = new Dictionary<string, object>();
+                            foreach (DataColumn col in result.Columns)
+                            {
+                                currentValues[col.ColumnName] = result.Rows[0][col];
+                            }
+
+                            // Show comparison window
+                            var detailsWindow = new RequestDetailsWindow(
+                                currentValues,
+                                row["UpdatedData"].ToString(),
+                                () => ProcessApproval(row),
+                                () => ShowRejectDialog(row)
+                            );
+                            detailsWindow.Owner = this;
+                            LoadRequests();
+                            detailsWindow.ShowDialog();
+                        }
+                    }
+                    else if (MessageBox.Show("Are you sure you want to approve this request?", 
+                        "Confirm Approval", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
                         ProcessApproval(row);
                         LoadRequests();
                     }
-                    catch (Exception ex)
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error processing request: {ex.Message}", 
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        private void BtnRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            LoadRequests();
+        }       
+        private void ShowRejectDialog(DataRowView row)
+        {
+            var reasonWindow = new RejectReasonWindow();
+            if (reasonWindow.ShowDialog() == true)
+            {
+                try
+                {
+                    var parameters = new SqlParameter[]
                     {
-                        MessageBox.Show($"Error approving request: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                        new("@requestId", Convert.ToInt32(row["Request_ID"])),
+                        new("@rejectedReason", reasonWindow.Reason),
+                        new("@approvedBy", _currentUserName),
+                        new("@approvedDate", DateTime.Now)
+                    };
+
+                    string query = @"
+                        UPDATE Requests 
+                        SET Status = 'Rejected',
+                            RejectedReason = @rejectedReason,
+                            ApprovedBy = @approvedBy,
+                            ApprovedDate = @approvedDate
+                        WHERE Request_ID = @requestId";
+
+                    _dbContext.UpdateData(query, parameters);
+                    LoadRequests();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error rejecting request: {ex.Message}", 
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -257,10 +333,26 @@ namespace Zenskar_MAMS.Windows
                     ApproveRegistration(row["RequestedBy"].ToString());
                     break;
                 case "Update":
-                    // Student updates are handled directly in StudentDetails
+                    if (int.TryParse(row["Student_ID"]?.ToString(), out int studentId))
+                    {
+                        string updatedDataJson = row["UpdatedData"]?.ToString();
+                        if (!string.IsNullOrEmpty(updatedDataJson))
+                        {
+                            try
+                            {
+                                var updatedData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(updatedDataJson);
+                                UpdateStudent(studentId, updatedData);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Error processing update data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                return;
+                            }
+                        }
+                    }
                     break;
                 case "Delete":
-                    if (int.TryParse(row["Student_ID"]?.ToString(), out int studentId))
+                    if (int.TryParse(row["Student_ID"]?.ToString(), out studentId))
                     {
                         DeleteStudent(studentId);
                     }
@@ -302,6 +394,61 @@ namespace Zenskar_MAMS.Windows
                 WHERE User_Name = @userName";
 
             _dbContext.UpdateData(query, parameters);
+        }
+
+        private void UpdateStudent(int studentId, Dictionary<string, object> updatedData)
+        {
+            var parameters = new List<SqlParameter>
+            {
+                new("@studentId", studentId)
+            };
+
+            var updateParts = new List<string>();
+            foreach (var kvp in updatedData)
+            {
+                string paramName = $"@{kvp.Key}";
+                object value = kvp.Value;
+
+                // Handle special cases
+                if (value is JsonElement element)
+                {
+                    switch (element.ValueKind)
+                    {
+                        case JsonValueKind.String:
+                            value = element.GetString();
+                            break;
+                        case JsonValueKind.Number:
+                            value = element.GetInt32();
+                            break;
+                        case JsonValueKind.True:
+                        case JsonValueKind.False:
+                            value = element.GetBoolean();
+                            break;
+                        case JsonValueKind.Null:
+                            value = DBNull.Value;
+                            break;
+                        default:
+                            continue;
+                    }
+                }
+
+                parameters.Add(new SqlParameter(paramName, value ?? DBNull.Value));
+                updateParts.Add($"{kvp.Key} = {paramName}");
+            }
+
+            string updateQuery = $@"
+                UPDATE Student_Data 
+                SET {string.Join(", ", updateParts)}
+                WHERE Student_ID = @studentId";
+
+            try
+            {
+                _dbContext.UpdateData(updateQuery, parameters.ToArray());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating student data: {ex.Message}");
+            }
         }
 
         private void DeleteStudent(int studentId)

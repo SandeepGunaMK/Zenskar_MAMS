@@ -76,6 +76,7 @@ namespace Zenskar_MAMS.Windows
         private void ConfigurePermissions()
         {
             bool canEdit = false;
+            bool canRequestUpdate = false;
 
             switch (_currentUserType)
             {
@@ -97,19 +98,30 @@ namespace Zenskar_MAMS.Windows
                         var parameters = new SqlParameter[] { new("@studentId", _studentId) };
                         var result = _dbContext.SelectData(query, parameters);
 
-                        if (result.Rows.Count > 0 && result.Rows[0]["InstructorName"].ToString() == _currentUserName)
+                        if (result.Rows.Count > 0)
                         {
-                            canEdit = true;
-                        }
-                        else
-                        {
-                            BtnSave.Visibility = Visibility.Collapsed;
-                            BtnRequestUpdate.Visibility = Visibility.Visible;
+                            if (result.Rows[0]["InstructorName"].ToString() == _currentUserName)
+                            {
+                                canEdit = true;
+                            }
+                            else
+                            {
+                                canRequestUpdate = true;
+                                BtnSave.Visibility = Visibility.Collapsed;
+                                BtnRequestUpdate.Visibility = Visibility.Visible;
+                            }
                         }
                     }
                     break;
             }
 
+            // If the instructor can request an update, enable controls but hide save button
+            if (canRequestUpdate)
+            {
+                return; // Keep all controls enabled for update request
+            }
+
+            // Otherwise, apply normal permissions
             if (!canEdit)
             {
                 foreach (var element in new FrameworkElement[] 
@@ -321,17 +333,58 @@ namespace Zenskar_MAMS.Windows
         {
             try
             {
+                if (!ValidateInput())
+                    return;
+
+                // First, serialize the updated data
+                var updatedData = new
+                {
+                    Name = TxtName.Text,
+                    DOB = DpDOB.SelectedDate.Value,
+                    Age = int.Parse(TxtAge.Text),
+                    Gender = CmbGender.Text,
+                    Location = TxtLocation.Text,
+                    Belt = CmbBelt.Text,
+                    InstructorName = CmbInstructor.Text,
+                    MasterName = CmbMaster.Text,
+                    ContactNumber = TxtContactNumber.Text,
+                    ParentsName = TxtParentsName.Text,
+                    MedicalConditions = TxtMedicalConditions.Text ?? string.Empty,
+                    LastExamDate = (object)DpLastExamDate.SelectedDate ?? DBNull.Value,
+                    Attempts = string.IsNullOrEmpty(TxtAttempts.Text) ? 0 : int.Parse(TxtAttempts.Text),
+                    DateOfJoining = DpDateOfJoining.SelectedDate.Value,
+                    Comments = TxtComments.Text ?? string.Empty
+                };
+
+                // Convert the updated data to JSON
+                string updatedDataJson = System.Text.Json.JsonSerializer.Serialize(updatedData);
+
                 var parameters = new SqlParameter[]
                 {
                     new("@requestType", "Update"),
                     new("@requestedBy", _currentUserName),
                     new("@studentId", _studentId),
-                    new("@requestedDate", DateTime.Now)
+                    new("@requestedDate", DateTime.Now),
+                    new("@updatedData", updatedDataJson)
                 };
 
                 string query = @"
-                    INSERT INTO Requests (RequestType, RequestedBy, Student_ID, Status, RequestedDate)
-                    VALUES (@requestType, @requestedBy, @studentId, 'Open', @requestedDate)";
+                    INSERT INTO Requests (
+                        RequestType, 
+                        RequestedBy, 
+                        Student_ID, 
+                        Status, 
+                        RequestedDate, 
+                        UpdatedData
+                    )
+                    VALUES (
+                        @requestType, 
+                        @requestedBy, 
+                        @studentId, 
+                        'Open', 
+                        @requestedDate,
+                        @updatedData
+                    )";
 
                 _dbContext.InsertData(query, parameters);
                 MessageBox.Show("Update request submitted successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);

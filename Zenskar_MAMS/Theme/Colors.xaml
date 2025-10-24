@@ -23,9 +23,10 @@
     <Color x:Key="SurfaceDarkColor">#1A1E2D</Color>
     
     <!-- State Colors -->
-    <Color x:Key="SuccessColor">#00E676</Color>
+    <Color x:Key="SuccessColor">#C4DFAA</Color>
     <Color x:Key="WarningColor">#FFD740</Color>
-    <Color x:Key="ErrorColor">#FF5252</Color>
+    <Color x:Key="WarningColor1">#FAF3A0</Color>
+    <Color x:Key="ErrorColor">#F2A8A8</Color>
 
     <!-- Gradient Stops -->
     <GradientStop x:Key="GradientStart" Color="#3F8CFF" Offset="0"/>
@@ -34,6 +35,9 @@
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="{StaticResource PrimaryDarkColor}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="WarningBrush1" Color="{StaticResource WarningColor1}"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryDarkColor}"/>
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
     <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>

@@ -4,7 +4,7 @@
 
     <!-- Animation Durations -->
     <Duration x:Key="AnimationDurationShort">0:0:0.2</Duration>
-    <Duration x:Key="AnimationDurationNormal">0:0:0.3</Duration>
+    <Duration x:Key="AnimationDurationFast">0:0:0.1</Duration> 
 
     <!-- Modern Window Style -->
     <Style x:Key="ModernWindowStyle" TargetType="Window">
@@ -204,7 +204,7 @@
     <!-- Modern DataGrid Style -->
     <Style x:Key="ModernDataGridStyle" TargetType="DataGrid">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource SecondaryBackgroundBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="GridLinesVisibility" Value="None"/>
         <Setter Property="RowHeaderWidth" Value="0"/>
@@ -212,6 +212,79 @@
         <!--<Setter Property="HorizontalGridLinesBrush" Value="{StaticResource SurfaceLightBrush}"/>
         <Setter Property="RowBackground" Value="{StaticResource SurfaceBrush}"/>-->
         <!--<Setter Property="AlternatingRowBackground" Value="{StaticResource SurfaceDarkColor}"/>-->
+    </Style>
+
+    <!-- Modern DataGrid Row Style -->
+    <Style x:Key="ModernDataGridRowStyle" TargetType="DataGridRow">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource SecondaryBackgroundBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridRow">
+                    <Border x:Name="RowBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                        <SelectiveScrollingGrid>
+                            <SelectiveScrollingGrid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </SelectiveScrollingGrid.ColumnDefinitions>
+                            <SelectiveScrollingGrid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </SelectiveScrollingGrid.RowDefinitions>
+                            <DataGridCellsPresenter Grid.Column="1"
+                                                  ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                            <DataGridDetailsPresenter Grid.Column="1"
+                                                    Grid.Row="1"
+                                                    Visibility="{TemplateBinding DetailsVisibility}"/>
+                        </SelectiveScrollingGrid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Mouse Over Effect -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource SurfaceLightColor}"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+
+                        <!-- Selected State -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="{StaticResource AccentBlue}" Offset="0"/>
+                                        <GradientStop Color="{StaticResource AccentPurple}" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        </Trigger>
+
+                        <!-- Alternate Row -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="AlternationIndex" Value="1"/>
+                                <Condition Property="IsSelected" Value="False"/>
+                                <Condition Property="IsMouseOver" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+                        </MultiTrigger>
+
+                        <!-- Disabled State -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Modern Header Style -->
