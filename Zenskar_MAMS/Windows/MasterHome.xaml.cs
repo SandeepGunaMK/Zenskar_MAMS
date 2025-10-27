@@ -20,6 +20,7 @@ namespace Zenskar_MAMS.Windows
 
         private void BtnRequests_Click(object sender, RoutedEventArgs e)
         {
+            this.Close();
             var requestsWindow = new RequestsWindow("Master", _userName);
             requestsWindow.ShowDialog();
         }

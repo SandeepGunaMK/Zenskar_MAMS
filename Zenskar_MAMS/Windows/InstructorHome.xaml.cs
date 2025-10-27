@@ -48,7 +48,8 @@ namespace Zenskar_MAMS.Windows
         private void BtnRequests_Click(object sender, RoutedEventArgs e)
         {
             try
-            {
+            {   
+                this.Close();
                 var requestsWindow = new RequestsWindow("Instructor", _userName);
                 requestsWindow.ShowDialog();
             }

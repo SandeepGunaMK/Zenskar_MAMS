@@ -219,24 +219,45 @@ namespace Zenskar_MAMS.Windows
             }
         }
 
-        private void BtnStopStudent_Click(object sender, RoutedEventArgs e)
+        private void BtnUpdateStatus_Click(object sender, RoutedEventArgs e)
         {
             if (StudentsGrid.SelectedItem is DataRowView row)
             {
-                if (MessageBox.Show("Are you sure you want to stop this student?", "Confirm Stop", 
+                if (MessageBox.Show("Are you sure you want to Update the status of this student?", "Update", 
                     MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     try
                     {
+                        var parameterSelect = new SqlParameter[]
+                        {
+                            new("@studentId", Convert.ToInt32(row["Student_ID"]))
+                        };
                         var parameters = new SqlParameter[]
                         {
                             new("@studentId", Convert.ToInt32(row["Student_ID"]))
                         };
 
-                        string query = "UPDATE Student_Data SET StudentStatus = 'Stopped' WHERE Student_ID = @studentId";
-                        _dbContext.UpdateData(query, parameters);
+                        string query = "SELECT StudentStatus FROM Student_Data WHERE Student_ID = @studentId";
+                        var result = _dbContext.SelectData(query, parameterSelect);
+
+                        string status = result.Rows[0]["StudentStatus"].ToString();
+
+                        if (status == "Active")
+                        {
+                            query = "UPDATE Student_Data SET StudentStatus = 'Stopped' WHERE Student_ID = @studentId";
+                            _dbContext.UpdateData(query, parameters);
+                            MessageBox.Show("Student status updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        else if(status == "Stopped")
+                        {
+                            query = "UPDATE Student_Data SET StudentStatus = 'Active' WHERE Student_ID = @studentId";
+                            _dbContext.UpdateData(query, parameters);
+                            MessageBox.Show("Student status updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        else { 
+                            MessageBox.Show("Student status is neither Active nor Stopped. No changes made.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
                         LoadStudents();
-                        MessageBox.Show("Student status updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     catch (Exception ex)
                     {

@@ -172,8 +172,8 @@
                     Click="BtnViewDetails_Click"
                     Style="{StaticResource ModernButtonStyle}"
                     Margin="0,0,10,0"/>
-            <Button Content="Stop Student"
-                    Click="BtnStopStudent_Click"
+            <Button Content="Update Status"
+                    Click="BtnUpdateStatus_Click"
                     Style="{StaticResource ModernButtonStyle}"
                     Margin="0,0,10,0"/>
             <Button x:Name="BtnDeleteStudent"

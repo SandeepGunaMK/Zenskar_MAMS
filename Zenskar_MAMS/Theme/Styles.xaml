@@ -4,7 +4,7 @@
 
     <!-- Animation Durations -->
     <Duration x:Key="AnimationDurationShort">0:0:0.2</Duration>
-    <Duration x:Key="AnimationDurationFast">0:0:0.1</Duration> 
+    <Duration x:Key="AnimationDurationFast">0:0:0.1</Duration>
 
     <!-- Modern Window Style -->
     <Style x:Key="ModernWindowStyle" TargetType="Window">

@@ -64,7 +64,7 @@ namespace Zenskar_MAMS.Windows
                 if (_currentUserType == "Instructor")
                 {
                     CmbInstructor.SelectedItem = _currentUserName;
-                    CmbInstructor.IsEnabled = false;
+                    CmbInstructor.IsEnabled = true;
                 }
             }
             catch (Exception ex)
