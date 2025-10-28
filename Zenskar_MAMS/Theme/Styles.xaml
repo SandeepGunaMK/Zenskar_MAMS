@@ -19,7 +19,6 @@
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="20,12"/>
-        <Setter Property="MinWidth" Value="100"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -71,7 +70,8 @@
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}"/>
-        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}" />
+        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="15,10"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -86,7 +86,7 @@
                                         Margin="2"
                                         VerticalAlignment="Center"/>
                             <Border x:Name="borderHighlight"
-                                    BorderThickness="2"
+                                    BorderThickness="3"
                                     BorderBrush="{StaticResource AccentGradientBrush}"
                                     CornerRadius="8"
                                     Opacity="0"/>
@@ -125,7 +125,8 @@
     <Style x:Key="ModernPasswordBoxStyle" TargetType="PasswordBox">
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}" />
+        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="15,10"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -140,7 +141,7 @@
                                         Margin="2"
                                         VerticalAlignment="Center"/>
                             <Border x:Name="borderHighlight"
-                                    BorderThickness="2"
+                                    BorderThickness="3"
                                     BorderBrush="{StaticResource AccentGradientBrush}"
                                     CornerRadius="8"
                                     Opacity="0"/>
@@ -308,6 +309,12 @@
         <Setter Property="Margin" Value="0,0,0,5"/>
     </Style>
 
+
+    <Style x:Key="ModernCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{StaticResource TextSecondaryBrush}"/>
+    </Style>
     <!-- Modern Radio Button Style -->
     <Style x:Key="ModernRadioButtonStyle" TargetType="RadioButton">
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>

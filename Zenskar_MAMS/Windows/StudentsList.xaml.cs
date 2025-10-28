@@ -1,41 +1,193 @@
+using Microsoft.Data.SqlClient;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
+using System.DirectoryServices.ActiveDirectory;
+using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Data.SqlClient;
-using System.Text;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Media;
 
 namespace Zenskar_MAMS.Windows
 {
+    public class BatchItem
+    {
+        public string Location { get; set; }
+        public string Batch { get; set; }
+    }
     public partial class StudentsList : Window
     {
         private readonly DBContext _dbContext;
-        private readonly string _currentUserType;
-        private readonly string _currentUserName;
+        private readonly string _userType;
+        private readonly string _userName;
+        private DataTable _originalData;
+        private Dictionary<string, HashSet<string>> _columnFilters;
+        private ICollectionView _studentsView;
 
+        #region Dropdown Filter Properties
+        private ObservableCollection<BatchItem> _location_BF;
+        public ObservableCollection<BatchItem> Location_BF
+        {
+            get => _location_BF;
+            set { _location_BF = value; OnPropertyChanged(nameof(Location_BF)); }
+        }
+
+        private string _selectedLocation = "All";
+        public string SelectedLocation
+        {
+            get => _selectedLocation;
+            set { _selectedLocation = value; OnPropertyChanged(nameof(SelectedLocation)); }
+        }
+
+        private ObservableCollection<BatchItem> _batch_BF;
+        public ObservableCollection<BatchItem> Batch_BF
+        {
+            get => _batch_BF;
+            set { _batch_BF = value; OnPropertyChanged(nameof(Batch_BF)); }
+        }
+
+        private string _selectedBatch = "All";
+        public string SelectedBatch 
+        {
+            get => _selectedBatch;
+            set { _selectedBatch = value; OnPropertyChanged(nameof(SelectedBatch)); }
+        }
+
+        private ObservableCollection<BatchItem> _status_BF;
+        public ObservableCollection<BatchItem> Status_BF
+        {
+            get => _status_BF;
+            set { _status_BF = value; OnPropertyChanged(nameof(Status_BF)); }
+        }
+
+        private string _selectedStatus = "All";
+        public string SelectedStatus
+        {
+            get => _selectedStatus;
+            set { _selectedStatus = value; OnPropertyChanged(nameof(SelectedStatus)); }
+        }
+
+        #endregion
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        protected override void OnClosed(System.EventArgs e)
+        {
+            base.OnClosed(e);
+            if (Application.Current.Windows.Count == 1)
+            {
+                Application.Current.Shutdown();
+            }
+        }
         public StudentsList(string userType, string userName)
         {
             InitializeComponent();
+            DataContext = this;
             _dbContext = new DBContext();
-            _currentUserType = userType;
-            _currentUserName = userName;
+            _userType = userType;
+            _userName = userName;
+            _columnFilters = new Dictionary<string, HashSet<string>>();
 
-            // Configure permissions based on user type
-            ConfigureUserPermissions();
-
-            // Load initial data
             LoadStudents();
-
-            // Set default values for filters
-            CmbAgeOperator.SelectedIndex = 0;
-            CmbGenderFilter.SelectedIndex = 0;
-            CmbBeltFilter.SelectedIndex = 0;
-            CmbStatusFilter.SelectedIndex = 0;
+            
+            ConfigureUserPermissions();
         }
+        
+        private void LoadStudents()
+        {
+            try
+            {
+                string query = "SELECT * FROM Student_Data";
+                
+                var parameters = _userType == "Instructor" 
+                    ? new SqlParameter[] { new("@userName", _userName) }
+                    : Array.Empty<SqlParameter>();
 
+                _originalData = _dbContext.SelectData(query, parameters);
+                StudentsGrid.ItemsSource = _originalData.DefaultView;
+
+                // Set alternating row colors
+                StudentsGrid.AlternationCount = 2;
+                #region Populate filter options for Location 
+                var distinctLocations = _originalData.AsEnumerable()
+                        .Select(r => r.Field<string>("Location"))
+                        .Where(v => !string.IsNullOrEmpty(v))
+                        .Distinct()
+                        .Select(v => new BatchItem { Location = v }).ToList();
+                distinctLocations.Insert(0, new BatchItem { Location = "All" });
+                Location_BF = new ObservableCollection<BatchItem>(distinctLocations);
+                #endregion
+                #region Populate filter options for Batch
+                var distinctBatchs = _originalData.AsEnumerable()
+                        .Select(r => r.Field<string>("Belt"))
+                        .Where(v => !string.IsNullOrEmpty(v))
+                        .Distinct()
+                        .Select(v => new BatchItem { Batch = v }).ToList();
+                distinctBatchs.Insert(0, new BatchItem { Batch = "All" });
+                Batch_BF = new ObservableCollection<BatchItem>(distinctBatchs);
+                #endregion
+                #region Populate filter options for Status
+                var distinctStaus = _originalData.AsEnumerable()
+                        .Select(r => r.Field<string>("StudentStatus"))
+                        .Where(v => !string.IsNullOrEmpty(v))
+                        .Distinct()
+                        .Select(v => new BatchItem { Batch = v }).ToList();
+                distinctStaus.Insert(0, new BatchItem { Batch = "All" });
+                Status_BF = new ObservableCollection<BatchItem>(distinctStaus);
+                #endregion
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading students: {ex.Message}", 
+                    "Error", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
+            }
+        }
+        private void BatchFilterSelected(object sender, RoutedEventArgs e)
+        {
+            DataTable dt = _originalData;
+            DataRow[] filteredRows = dt.Select();
+            string filter = "1=1"; // always true, helps build conditions easily
+
+            if (SelectedLocation != "All")
+                filter += $" AND Location = '{SelectedLocation}'";
+
+            if (SelectedBatch != "All")
+                filter += $" AND Belt = '{SelectedBatch}'";
+
+            if (SelectedStatus != "All")
+                filter += $" AND StudentStatus = '{SelectedStatus}'";
+
+            string? selectedAge = (Age.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            //if (selectedAge != "All")
+            //    filter += $" AND Age " + selectedAge + "'" + AgeValue.Text + "'";
+            if (string.IsNullOrEmpty(selectedAge) || selectedAge == "All") { filteredRows = dt.Select(); }
+            else if (string.IsNullOrEmpty(AgeValue.Text)) { filteredRows = dt.Select(); }
+            else { filter += $" AND Age " + selectedAge + "'" + AgeValue.Text + "'"; }
+            
+            filteredRows = dt.Select(filter);
+
+            if (filteredRows.Length == 0)
+            {
+                StudentsGrid.ItemsSource = dt.Select("0=1");
+                return;
+            }
+            StudentsGrid.ItemsSource = filteredRows.CopyToDataTable().DefaultView;
+        }
         private void ConfigureUserPermissions()
         {
-            switch (_currentUserType)
+            switch (_userType)
             {
                 case "Admin":
                     BtnDeleteStudent.Visibility = Visibility.Visible;
@@ -49,133 +201,24 @@ namespace Zenskar_MAMS.Windows
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
-            switch (_currentUserType)
+            switch (_userType)
             {
                 case "Admin":
-                    AdminHome adminHome = new AdminHome(_currentUserName);
+                    AdminHome adminHome = new AdminHome(_userName);
                     this.Close();
                     adminHome.Show();
                     break;
                 case "Master":
-                    MasterHome masterHome = new MasterHome(_currentUserName);   
+                    MasterHome masterHome = new MasterHome(_userName);   
                     this.Close();
                     masterHome.Show();
                     break;
                 case "Instructor":
-                    InstructorHome instructorHome = new InstructorHome(_currentUserName);
+                    InstructorHome instructorHome = new InstructorHome(_userName);
                     this.Close();
                     instructorHome.Show();
                     break;
             }
-        }
-
-        private void LoadStudents()
-        {
-            try
-            {
-                StringBuilder query = new StringBuilder("SELECT * FROM Student_Data WHERE 1=1");
-                //SqlParameter[] param = new SqlParameter[] { new("@instructorName", _currentUserName) };
-                //// For instructors, only show their students
-                //if (_currentUserType == "Instructor")
-                //{                    
-                //    query.Append(" AND InstructorName = @instructorName");
-                //}
-                //var result = _dbContext.SelectData(query.ToString(), param);
-                var result = _dbContext.SelectData(query.ToString());
-                StudentsGrid.ItemsSource = result.DefaultView;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading students: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void BtnApplyFilters_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                StringBuilder query = new StringBuilder("SELECT * FROM Student_Data WHERE 1=1");
-                var parameters = new List<SqlParameter>();
-                var conditions = new List<string>();
-
-                // Name filter
-                if (!string.IsNullOrWhiteSpace(TxtNameFilter.Text))
-                {
-                    conditions.Add("Name LIKE @name");
-                    parameters.Add(new SqlParameter("@name", $"%{TxtNameFilter.Text}%"));
-                }
-
-                // Age filter
-                if (!string.IsNullOrWhiteSpace(TxtAgeFilter.Text) && int.TryParse(TxtAgeFilter.Text, out int age))
-                {
-                    string ageOperator = (CmbAgeOperator.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "=";
-                    conditions.Add($"Age {ageOperator} @age");
-                    parameters.Add(new SqlParameter("@age", age));
-                }
-
-                // Gender filter
-                if (CmbGenderFilter.SelectedIndex > 0)
-                {
-                    conditions.Add("Gender = @gender");
-                    parameters.Add(new SqlParameter("@gender", (CmbGenderFilter.SelectedItem as ComboBoxItem)?.Content.ToString()));
-                }
-
-                // Location filter
-                if (!string.IsNullOrWhiteSpace(TxtLocationFilter.Text))
-                {
-                    conditions.Add("Location LIKE @location");
-                    parameters.Add(new SqlParameter("@location", $"%{TxtLocationFilter.Text}%"));
-                }
-
-                // Belt filter
-                if (CmbBeltFilter.SelectedIndex > 0)
-                {
-                    conditions.Add("Belt = @belt");
-                    parameters.Add(new SqlParameter("@belt", (CmbBeltFilter.SelectedItem as ComboBoxItem)?.Content.ToString()));
-                }
-
-                // Status filter
-                if (CmbStatusFilter.SelectedIndex > 0)
-                {
-                    conditions.Add("StudentStatus = @status");
-                    parameters.Add(new SqlParameter("@status", (CmbStatusFilter.SelectedItem as ComboBoxItem)?.Content.ToString()));
-                }
-
-                // For instructors, only show their students
-                if (_currentUserType == "Instructor")
-                {
-                    conditions.Add("InstructorName = @instructorName");
-                    parameters.Add(new SqlParameter("@instructorName", _currentUserName));
-                }
-
-                // Add conditions with selected logic (AND/OR)
-                if (conditions.Count > 0)
-                {
-                    string logic = RbAnd.IsChecked == true ? " AND " : " OR ";
-                    query.Append(" AND (").Append(string.Join(logic, conditions)).Append(")");
-                }
-
-                var result = _dbContext.SelectData(query.ToString(), parameters.ToArray());
-                StudentsGrid.ItemsSource = result.DefaultView;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error applying filters: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void BtnClearFilters_Click(object sender, RoutedEventArgs e)
-        {
-            TxtNameFilter.Clear();
-            TxtAgeFilter.Clear();
-            TxtLocationFilter.Clear();
-            CmbGenderFilter.SelectedIndex = 0;
-            CmbBeltFilter.SelectedIndex = 0;
-            CmbStatusFilter.SelectedIndex = 0;
-            CmbAgeOperator.SelectedIndex = 0;
-            RbAnd.IsChecked = true;
-
-            LoadStudents();
         }
 
         private void StudentsGrid_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -184,8 +227,8 @@ namespace Zenskar_MAMS.Windows
             {
                 var studentDetails = new StudentDetails(
                     Convert.ToInt32(row["Student_ID"]),
-                    _currentUserType,
-                    _currentUserName
+                    _userType,
+                    _userName
                 );
                 studentDetails.ShowDialog();
                 LoadStudents(); // Refresh after details window is closed
@@ -194,7 +237,7 @@ namespace Zenskar_MAMS.Windows
 
         private void BtnAddStudent_Click(object sender, RoutedEventArgs e)
         {
-            var studentDetails = new StudentDetails(0, _currentUserType, _currentUserName); // 0 indicates new student
+            var studentDetails = new StudentDetails(0, _userType, _userName); // 0 indicates new student
             if (studentDetails.ShowDialog() == true)
             {
                 LoadStudents();
@@ -207,8 +250,8 @@ namespace Zenskar_MAMS.Windows
             {
                 var studentDetails = new StudentDetails(
                     Convert.ToInt32(row["Student_ID"]),
-                    _currentUserType,
-                    _currentUserName
+                    _userType,
+                    _userName
                 );
                 studentDetails.ShowDialog();
                 LoadStudents();
@@ -273,7 +316,7 @@ namespace Zenskar_MAMS.Windows
 
         private void BtnDeleteStudent_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentUserType != "Admin")
+            if (_userType != "Admin")
             {
                 MessageBox.Show("Only administrators can delete students.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -308,5 +351,126 @@ namespace Zenskar_MAMS.Windows
             }
         }
 
+        private void FilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var button = (Button)sender;
+                var columnName = button.Tag.ToString();
+                columnName = (columnName=="Master") ? "MasterName" : columnName;
+                columnName = (columnName=="Status") ? "StudentStatus" : columnName;
+                columnName = (columnName=="Instructor") ? "InstructorName" : columnName;
+                var dataView = (DataView)StudentsGrid.ItemsSource;
+                var data = new DataView(_originalData);
+
+                var filterWindow = new FilterWindow(columnName, data, ApplyColumnFilter);
+                filterWindow.Owner = this;
+                filterWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error showing filter: {ex.Message}", 
+                    "Error", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void ClearFilters_BtnClick(object sender, RoutedEventArgs e) {
+            Location.SelectedValue= "All";
+            Batch.SelectedValue= "All";
+            BatchFilterSelected(sender, e);
+        }
+
+        private void ApplyColumnFilter(string columnName, IEnumerable<string> selectedValues)
+        {
+            try
+            {   
+                var view = (DataView)StudentsGrid.ItemsSource;
+                view = new DataView(_originalData);
+                if (selectedValues == null)
+                {
+                    // Clear filter
+                    view.RowFilter = string.Empty;
+                    return;
+                }
+
+                if (!selectedValues.Any())
+                {
+                    return; // No values selected, keep current filter
+                }
+
+                var filter = string.Join(" OR ", 
+                    selectedValues.Select(v => $"Convert({columnName}, 'System.String') = '{v}'"));
+
+                if (string.IsNullOrEmpty(view.RowFilter))
+                    view.RowFilter = $"({filter})";
+                else
+                    view.RowFilter += $" AND ({filter})";
+
+                StudentsGrid.ItemsSource = view;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error applying filter: {ex.Message}", 
+                    "Error", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
+            }
+        }
+        
+
+        private void StudentsGrid_Sorting(object sender, DataGridSortingEventArgs e)
+        {
+            // Prevent automatic sorting
+            e.Handled = true;
+
+            var column = e.Column;
+            var sortDirection = column.SortDirection == ListSortDirection.Ascending 
+                ? ListSortDirection.Descending 
+                : ListSortDirection.Ascending;
+
+            column.SortDirection = sortDirection;
+
+            var direction = sortDirection == ListSortDirection.Ascending ? "ASC" : "DESC";
+            var header = column.Header as string;
+
+            // You can extend this to sort by multiple columns if needed
+            var sortedData = _originalData.AsEnumerable()
+                .OrderBy(row => row.Field<object>(header))
+                .CopyToDataTable();
+
+            if (sortDirection == ListSortDirection.Descending)
+            {
+                sortedData = sortedData.AsEnumerable()
+                    .Reverse()
+                    .CopyToDataTable();
+            }
+
+            StudentsGrid.ItemsSource = sortedData.DefaultView;
+        }
+                
+    }
+
+    public class FilterItem : INotifyPropertyChanged
+    {
+        private bool _isSelected;
+        
+        public string Value { get; set; }
+        
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected != value)
+                {
+                    _isSelected = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

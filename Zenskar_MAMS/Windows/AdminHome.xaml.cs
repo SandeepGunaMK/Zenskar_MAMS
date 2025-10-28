@@ -6,6 +6,14 @@ namespace Zenskar_MAMS.Windows
     {
         private readonly string _userName;
 
+        protected override void OnClosed(System.EventArgs e)
+        {
+            base.OnClosed(e);
+            if (Application.Current.Windows.Count == 1)
+            {
+                Application.Current.Shutdown();
+            }
+        }
         public AdminHome(string userName = "Admin")
         {
             InitializeComponent();

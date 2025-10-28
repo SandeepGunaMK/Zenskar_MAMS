@@ -86,6 +86,7 @@
                     <!-- Login Button -->
                     <Button Content="Login"
                             Click="BtnLogin_Click"
+                            IsDefault="True"
                             Height="45">
                         <Button.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
