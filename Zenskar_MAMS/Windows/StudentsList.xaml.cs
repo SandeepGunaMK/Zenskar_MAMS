@@ -18,7 +18,7 @@ namespace Zenskar_MAMS.Windows
 {
     public class BatchItem
     {
-        public string Location { get; set; }
+        public string Location { get; set; } 
         public string Batch { get; set; }
     }
     public partial class StudentsList : Window
@@ -521,7 +521,7 @@ namespace Zenskar_MAMS.Windows
                     MessageBoxImage.Error);
             }
         }
-
+        
         private void ClearFilters_BtnClick(object sender, RoutedEventArgs e) {
             Location.SelectedValue= "All";
             Batch.SelectedValue= "All";
