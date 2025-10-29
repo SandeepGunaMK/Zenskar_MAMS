@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -72,6 +73,48 @@ namespace Zenskar_MAMS.Windows
             set { _selectedStatus = value; OnPropertyChanged(nameof(SelectedStatus)); }
         }
 
+        private ObservableCollection<BatchItem> _instructor_BF;
+        public ObservableCollection<BatchItem> Instructor_BF
+        {
+            get => _instructor_BF;
+            set { _instructor_BF = value; OnPropertyChanged(nameof(Instructor_BF)); }
+        }
+
+        private string _selectedInstructor = "All";
+        public string SelectedInstructor
+        {
+            get => _selectedInstructor;
+            set { _selectedInstructor = value; OnPropertyChanged(nameof(SelectedInstructor)); }
+        }
+
+        private ObservableCollection<BatchItem> _master_BF;
+        public ObservableCollection<BatchItem> Master_BF
+        {
+            get => _master_BF;
+            set { _master_BF = value; OnPropertyChanged(nameof(Master_BF)); }
+        }
+
+        private string _selectedMaster = "All";
+        public string SelectedMaster
+        {
+            get => _selectedMaster;
+            set { _selectedMaster = value; OnPropertyChanged(nameof(SelectedMaster)); }
+        }
+
+        private ObservableCollection<BatchItem> _gender_BF;
+        public ObservableCollection<BatchItem> Gender_BF
+        {
+            get => _gender_BF;
+            set { _gender_BF = value; OnPropertyChanged(nameof(Gender_BF)); }
+        }
+
+        private string _selectedGender = "All";
+        public string SelectedGender
+        {
+            get => _selectedGender;
+            set { _selectedGender = value; OnPropertyChanged(nameof(SelectedGender)); }
+        }
+
         #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -117,6 +160,68 @@ namespace Zenskar_MAMS.Windows
 
                 // Set alternating row colors
                 StudentsGrid.AlternationCount = 2;
+                GetDropDownValues();
+
+                #region
+                //#region Populate filter options for Location 
+                //var distinctLocations = _originalData.AsEnumerable()
+                //        .Select(r => r.Field<string>("Location"))
+                //        .Where(v => !string.IsNullOrEmpty(v))
+                //        .Distinct()
+                //        .Select(v => new BatchItem { Location = v }).ToList();
+                //distinctLocations.Insert(0, new BatchItem { Location = "All" });
+                //Location_BF = new ObservableCollection<BatchItem>(distinctLocations);
+                //#endregion
+                //#region Populate filter options for Batch
+                //var distinctBatchs = _originalData.AsEnumerable()
+                //        .Select(r => r.Field<string>("Belt"))
+                //        .Where(v => !string.IsNullOrEmpty(v))
+                //        .Distinct()
+                //        .Select(v => new BatchItem { Batch = v }).ToList();
+                //distinctBatchs.Insert(0, new BatchItem { Batch = "All" });
+                //Batch_BF = new ObservableCollection<BatchItem>(distinctBatchs);
+                //#endregion
+                //#region Populate filter options for Status
+                //var distinctStaus = _originalData.AsEnumerable()
+                //        .Select(r => r.Field<string>("StudentStatus"))
+                //        .Where(v => !string.IsNullOrEmpty(v))
+                //        .Distinct()
+                //        .Select(v => new BatchItem { Batch = v }).ToList();
+                //distinctStaus.Insert(0, new BatchItem { Batch = "All" });
+                //Status_BF = new ObservableCollection<BatchItem>(distinctStaus);
+                //#endregion
+                //#region Populate filter options for Instructor
+                //var distinctInstructor = _originalData.AsEnumerable()
+                //        .Select(r => r.Field<string>("InstructorName"))
+                //        .Where(v => !string.IsNullOrEmpty(v))
+                //        .Distinct()
+                //        .Select(v => new BatchItem { Batch = v }).ToList();
+                //distinctInstructor.Insert(0, new BatchItem { Batch = "All" });
+                //Instructor_BF = new ObservableCollection<BatchItem>(distinctInstructor);
+                //#endregion
+                //#region Populate filter options for Master
+                //var distinctMaster = _originalData.AsEnumerable()
+                //        .Select(r => r.Field<string>("MasterName"))
+                //        .Where(v => !string.IsNullOrEmpty(v))
+                //        .Distinct()
+                //        .Select(v => new BatchItem { Batch = v }).ToList();
+                //distinctMaster.Insert(0, new BatchItem { Batch = "All" });
+                //Master_BF = new ObservableCollection<BatchItem>(distinctMaster);
+                //#endregion
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading students: {ex.Message}", 
+                    "Error", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
+            }
+        }
+        private void GetDropDownValues()
+        {
+            try
+            {
                 #region Populate filter options for Location 
                 var distinctLocations = _originalData.AsEnumerable()
                         .Select(r => r.Field<string>("Location"))
@@ -144,20 +249,59 @@ namespace Zenskar_MAMS.Windows
                 distinctStaus.Insert(0, new BatchItem { Batch = "All" });
                 Status_BF = new ObservableCollection<BatchItem>(distinctStaus);
                 #endregion
-
+                #region Populate filter options for Instructor
+                var distinctInstructor = _originalData.AsEnumerable()
+                        .Select(r => r.Field<string>("InstructorName"))
+                        .Where(v => !string.IsNullOrEmpty(v))
+                        .Distinct()
+                        .Select(v => new BatchItem { Batch = v }).ToList();
+                distinctInstructor.Insert(0, new BatchItem { Batch = "All" });
+                Instructor_BF = new ObservableCollection<BatchItem>(distinctInstructor);
+                #endregion
+                #region Populate filter options for Master
+                var distinctMaster = _originalData.AsEnumerable()
+                        .Select(r => r.Field<string>("MasterName"))
+                        .Where(v => !string.IsNullOrEmpty(v))
+                        .Distinct()
+                        .Select(v => new BatchItem { Batch = v }).ToList();
+                distinctMaster.Insert(0, new BatchItem { Batch = "All" });
+                Master_BF = new ObservableCollection<BatchItem>(distinctMaster);
+                #endregion
+                #region Populate filter options for Gender
+                var distinctGender = _originalData.AsEnumerable()
+                        .Select(r => r.Field<string>("Gender"))
+                        .Where(v => !string.IsNullOrEmpty(v))
+                        .Distinct()
+                        .Select(v => new BatchItem { Batch = v }).ToList();
+                distinctGender.Insert(0, new BatchItem { Batch = "All" });
+                Gender_BF = new ObservableCollection<BatchItem>(distinctGender);
+                #endregion
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading students: {ex.Message}", 
-                    "Error", 
-                    MessageBoxButton.OK, 
+                MessageBox.Show($"Error loading Dropdown's Data: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }
+
         private void BatchFilterSelected(object sender, RoutedEventArgs e)
         {
             DataTable dt = _originalData;
             DataRow[] filteredRows = dt.Select();
+            string filter = addfilter();           
+            filteredRows = dt.Select(filter);
+            if (filteredRows.Length == 0)
+            {
+                StudentsGrid.ItemsSource = dt.Select("0=1");
+                return;
+            }
+            StudentsGrid.ItemsSource = filteredRows.CopyToDataTable().DefaultView;
+        }
+
+        private string addfilter()
+        {
             string filter = "1=1"; // always true, helps build conditions easily
 
             if (SelectedLocation != "All")
@@ -169,21 +313,23 @@ namespace Zenskar_MAMS.Windows
             if (SelectedStatus != "All")
                 filter += $" AND StudentStatus = '{SelectedStatus}'";
 
+            if (SelectedInstructor != "All")
+                filter += $" AND InstructorName = '{SelectedInstructor}'";
+
+            if (SelectedMaster != "All")
+                filter += $" AND MasterName = '{SelectedMaster}'";
+
+            if (SelectedGender != "All")
+                filter += $" AND Gender = '{SelectedGender}'";
+
             string? selectedAge = (Age.SelectedItem as ComboBoxItem)?.Content?.ToString();
             //if (selectedAge != "All")
             //    filter += $" AND Age " + selectedAge + "'" + AgeValue.Text + "'";
-            if (string.IsNullOrEmpty(selectedAge) || selectedAge == "All") { filteredRows = dt.Select(); }
-            else if (string.IsNullOrEmpty(AgeValue.Text)) { filteredRows = dt.Select(); }
+            if (string.IsNullOrEmpty(selectedAge) || selectedAge == "All") { filter += $" AND 1=1"; }
+            else if (string.IsNullOrEmpty(AgeValue.Text)) { filter += $" AND 1=1"; }
             else { filter += $" AND Age " + selectedAge + "'" + AgeValue.Text + "'"; }
-            
-            filteredRows = dt.Select(filter);
 
-            if (filteredRows.Length == 0)
-            {
-                StudentsGrid.ItemsSource = dt.Select("0=1");
-                return;
-            }
-            StudentsGrid.ItemsSource = filteredRows.CopyToDataTable().DefaultView;
+            return filter;
         }
         private void ConfigureUserPermissions()
         {
@@ -379,6 +525,12 @@ namespace Zenskar_MAMS.Windows
         private void ClearFilters_BtnClick(object sender, RoutedEventArgs e) {
             Location.SelectedValue= "All";
             Batch.SelectedValue= "All";
+            Status.SelectedValue= "All";
+            Instructor.SelectedValue= "All";
+            Master.SelectedValue= "All";
+            Gender.SelectedValue= "All";
+            Age.SelectedValue= "All";
+            AgeValue.Text= null;
             BatchFilterSelected(sender, e);
         }
 

@@ -17,12 +17,12 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding}"
                           VerticalAlignment="Center"/>
-                <Button Grid.Column="1"
+                <!--<Button Grid.Column="1"
                         Content="▿"
                         Width="18"
                         Margin="5,0,0,0"                        
                         Click="FilterButton_Click"
-                        Tag="{Binding}"/>
+                        Tag="{Binding}"/>-->
                 
             </Grid>
         </DataTemplate>
