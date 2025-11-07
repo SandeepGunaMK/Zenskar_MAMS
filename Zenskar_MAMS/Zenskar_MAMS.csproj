@@ -24,6 +24,7 @@
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="DBContext.cs" />
+    <Compile Include="Helpers\LogoutHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>

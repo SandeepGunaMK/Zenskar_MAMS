@@ -17,10 +17,15 @@
               FontSize="24"
               Margin="30,10" Width="584"/>
             <Button x:Name="BtnBack"
-            Content="Back"
-            Click="BtnBack_Click"
-            Margin="400,-40,20,10"
-            Style="{StaticResource ModernButtonStyle}" Width="100"/>
+                Content="Back"
+                Click="BtnBack_Click"
+                Margin="400,-40,100,10"
+                Style="{StaticResource ModernButtonStyle}" Width="100"/>
+            <Button x:Name="BtnLogout"
+                Content="Logout"
+                Margin="400,-40,5,10"
+                Click="BtnLogout_Click"
+                Style="{StaticResource LogoutButtonStyle}"/>
         </StackPanel>
         <Expander VerticalAlignment="Center" HorizontalAlignment="Center"
           Header="Select Month" Foreground="{StaticResource TextSecondaryBrush}"

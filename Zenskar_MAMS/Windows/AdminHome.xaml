@@ -12,13 +12,16 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
+        <Button x:Name="BtnLogout"
+            Content="Logout"
+            Margin="0,25,15,0"
+            Click="BtnLogout_Click"
+            Style="{StaticResource LogoutButtonStyle}"/>
         <!-- Header -->
-        <Border Grid.Row="0"
+        <Border Grid.Row="1"
         Background="{StaticResource SurfaceBrush}"
         Effect="{StaticResource ModernShadowEffect}"
-        Margin="30,25,30,0"
-        Height="80">
+        Margin="30,32,30,0" Height="48" VerticalAlignment="Top">
             <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -41,7 +44,7 @@
         </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="30,80,30,185">
+        <Grid Grid.Row="1" Margin="30,150,30,110">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -225,7 +228,9 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            --><!-- Icon --><!--
+                            -->
+                <!-- Icon -->
+                <!--
                             <Path Grid.Row="0"
                                   
                   Data="M9 2A1 1 0 0 0 8 3V4H6A2 2 0 0 0 4 6V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V6A2 2 0 0 0 18 4H16V3A1 1 0 0 0 15 2H9M9 4H15V6H9V4M9 10H11V12H9V10M9 14H11V16H9V14M13 10H17V12H13V10M13 14H17V16H13V14Z"
@@ -235,7 +240,9 @@
                   Stretch="Uniform"
                   Margin="0,20"/>
 
-                            --><!-- Text --><!--
+                            -->
+                <!-- Text -->
+                <!--
                             <StackPanel Grid.Row="1"
                       VerticalAlignment="Center">
                                 <TextBlock Text="Attendance"

@@ -1,12 +1,13 @@
+using Microsoft.Data.SqlClient;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Data.SqlClient;
-using System.Collections.Generic;
-using System.Text.Json;
 using System.Windows.Input;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -32,6 +33,10 @@ namespace Zenskar_MAMS.Windows
             this.CommandBindings.Add(commandBinding);
 
             LoadRequests();
+        }
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            LogoutHelper.Logout(this);
         }
         protected override void OnClosed(System.EventArgs e)
         {

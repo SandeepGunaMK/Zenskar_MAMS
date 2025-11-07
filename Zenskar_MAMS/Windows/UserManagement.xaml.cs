@@ -1,9 +1,10 @@
+using Microsoft.Data.SqlClient;
 using System;
 using System.Data;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Data.SqlClient;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -26,6 +27,10 @@ namespace Zenskar_MAMS.Windows
             AdminHome adminHome = new AdminHome();
             this.Close();
             adminHome.Show();
+        }
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            LogoutHelper.Logout(this);
         }
         private void LoadUsers()
         {

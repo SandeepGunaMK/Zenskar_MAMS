@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Text;
 using System.Windows;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -85,6 +86,10 @@ namespace Zenskar_MAMS.Windows
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            LogoutHelper.Logout(this);
         }
         private void DisplayExamDueBatchs(DataRow[] examDueStudents)
         {

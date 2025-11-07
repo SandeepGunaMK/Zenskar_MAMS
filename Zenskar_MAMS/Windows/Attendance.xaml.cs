@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualBasic;
-using Azure;
+﻿using Azure;
 using Microsoft.Data.SqlClient;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml.Linq;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -55,6 +56,10 @@ namespace Zenskar_MAMS.Windows
 
 
             LoadAttendanceData();
+        }
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            LogoutHelper.Logout(this);
         }
         public Attendance()
         {

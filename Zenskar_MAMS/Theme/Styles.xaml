@@ -303,7 +303,16 @@
             </Setter.Value>
         </Setter>
     </Style>
-
+    <!-- Logout Button Style -->
+    <Style x:Key="LogoutButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+        <Setter Property="Background" Value="#FFE53935"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Width" Value="100"/>
+        <Setter Property="Height" Value="35"/>
+        <!--<Setter Property="Margin" Value="0,10,10,0"/>-->
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+    </Style>
     <!-- Modern Label Style -->
     <Style x:Key="ModernLabelStyle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>

@@ -25,8 +25,13 @@
             <Button x:Name="BtnBack"
              Content="Back"
              Click="BtnBack_Click"
-             Margin="800,-40,20,10"
-             Style="{StaticResource ModernButtonStyle}" Width="30"/>
+             Margin="600,-40,20,10"
+             Style="{StaticResource ModernButtonStyle}" Width="100"/>
+            <Button x:Name="BtnLogout"
+                Content="Logout"
+                Click="BtnLogout_Click"
+                Margin="600,-40,20,10"
+                Style="{StaticResource LogoutButtonStyle}"/>
         </StackPanel>
 
         <!-- Filters -->

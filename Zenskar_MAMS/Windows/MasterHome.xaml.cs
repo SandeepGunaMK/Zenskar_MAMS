@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Text;
 using System.Windows;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -32,7 +33,10 @@ namespace Zenskar_MAMS.Windows
             var requestsWindow = new RequestsWindow("Master", _userName);
             requestsWindow.ShowDialog();
         }
-
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            LogoutHelper.Logout(this);
+        }
         private void LoadExamDueBatchs()
         {
             try

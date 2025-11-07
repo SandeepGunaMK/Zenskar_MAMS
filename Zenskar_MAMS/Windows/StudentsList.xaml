@@ -47,13 +47,18 @@
             <Button x:Name="BtnBack"
                     Content="Back"
                     Click="BtnBack_Click"
-                    Margin="1000,-40,20,10"
+                    Margin="900,-40,20,10"
                     Style="{StaticResource ModernButtonStyle}" Width="100"/>
             <Button x:Name="ClearFilters"
                     Content="Clear Filters"
                     Click="ClearFilters_BtnClick"
-                    Margin="750,-40,20,10"
+                    Margin="650,-40,20,10"
                     Style="{StaticResource ModernButtonStyle}" Width="100"/>
+            <Button x:Name="BtnLogout"
+                    Content="Logout"
+                    Margin="500,-40,20,10"
+                    Click="BtnLogout_Click"
+                    Style="{StaticResource LogoutButtonStyle}"/>
         </StackPanel>
 
         <!-- Batch Filters Expander -->

@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -28,7 +29,10 @@ namespace Zenskar_MAMS.Windows
                 Close();
             }
         }
-
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            LogoutHelper.Logout(this);
+        }
         private void BtnStudentsList_Click(object sender, RoutedEventArgs e)
         {
             try

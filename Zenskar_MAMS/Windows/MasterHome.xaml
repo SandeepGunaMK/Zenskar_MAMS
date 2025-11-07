@@ -21,6 +21,11 @@
                       Foreground="{StaticResource TextPrimaryBrush}"
                       FontSize="24"
                       Margin="20,0" Width="199"/>
+            <Button x:Name="BtnLogout"
+                     Content="Logout"
+                     Click="BtnLogout_Click"
+                     Margin="500,-25,15,10"
+                     Style="{StaticResource LogoutButtonStyle}"/>
         </StackPanel>
 
         <!-- Dashboard Cards -->
