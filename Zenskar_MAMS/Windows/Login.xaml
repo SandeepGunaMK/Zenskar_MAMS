@@ -109,7 +109,7 @@
                             Style="{StaticResource ModernButtonStyle}"
                             Background="Transparent"
                             Padding="5,0"
-                            Margin="-5,0,0,0">
+                            Margin="5,0,0,0">
                         <Button.Foreground>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                 <GradientStop Color="{StaticResource AccentCyan}" Offset="0"/>

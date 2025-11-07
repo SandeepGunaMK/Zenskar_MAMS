@@ -3,11 +3,11 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Student Details - Zenskar MAMS" 
-        Height="700" 
+        Height="900" 
         Width="800"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource SecondaryBackgroundBrush}">
-    <Grid>
+    <Grid Margin="0,26,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -15,19 +15,13 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel Grid.Row="0" 
-                    Background="{StaticResource PrimaryBackgroundBrush}">
-            <!--<Button x:Name="BtnBack"
-                    Content="Back"
-                    Click="BtnBack_Click"
-                    Margin="500,10,20,10"
-                    Style="{StaticResource ModernButtonStyle}" Width="30"/>-->
+        <StackPanel Grid.Row="0">           
             <TextBlock x:Name="HeaderText"
                        HorizontalAlignment="Center"
                       Text="Student Details"
                       Foreground="{StaticResource TextPrimaryBrush}"
                       FontSize="24"
-                      Margin="20,-10" Width="279"/>
+                      Margin="20,-10" Width="280" Height="48"/>
         </StackPanel>
 
         <!-- Student Details Form -->
@@ -110,6 +104,7 @@
                          x:Name="CmbBelt"
                          Margin="5">
                     <ComboBoxItem Content="All"/>
+                    <ComboBoxItem Content="Non-Uniform"/>
                     <ComboBoxItem Content="White"/>
                     <ComboBoxItem Content="White Senior"/>
                     <ComboBoxItem Content="Yellow"/>
@@ -118,7 +113,8 @@
                     <ComboBoxItem Content="Green"/>
                     <ComboBoxItem Content="Green Senior"/>
                     <ComboBoxItem Content="Brown"/>
-                    <ComboBoxItem Content="Brown Senior"/>
+                    <ComboBoxItem Content="Brown 1"/>
+                    <ComboBoxItem Content="Brown 2"/>
                     <ComboBoxItem Content="Black"/>
                 </ComboBox>
 

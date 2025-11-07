@@ -7,34 +7,41 @@
         Width="1200"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource PrimaryBackgroundBrush}">
-    <Grid>
+    <Grid Margin="0,0,0,-214">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" 
-                Background="{StaticResource SurfaceBrush}"
-                Effect="{StaticResource ModernShadowEffect}" Margin="450,25,450,580" Grid.RowSpan="2">
-            <Grid Margin="30,15">
+        <Border Grid.Row="0"
+        Background="{StaticResource SurfaceBrush}"
+        Effect="{StaticResource ModernShadowEffect}"
+        Margin="30,25,30,0"
+        Height="80">
+            <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" 
-                          Orientation="Horizontal"
-                            HorizontalAlignment="Center"
-                          VerticalAlignment="Center" Width="240">
-                    <TextBlock Text="   Admin Dashboard"
-                             Style="{StaticResource ModernHeaderStyle}" Width="242"/>
-                </StackPanel>
+                <TextBlock Text="Admin Dashboard"
+                   Style="{StaticResource ModernHeaderStyle}"
+                   VerticalAlignment="Center"/>
+
+                <TextBlock x:Name="ExamDueCountText"
+                   Style="{StaticResource ModernHeaderStyle}"
+                   Text="Exam Due Batches: 0"
+                   Grid.Column="1"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Margin="0,0,20,0"
+                   MouseLeftButtonDown="CallLoadExamDueBatchs" Cursor="Hand"/>
             </Grid>
         </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="30,213,30,205">
+        <Grid Grid.Row="1" Margin="30,80,30,185">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -43,7 +50,7 @@
             <!-- Dashboard Cards -->
             <WrapPanel Grid.Row="0" 
                       HorizontalAlignment="Center"
-                      Margin="0,20">
+                      Margin="0,41,0,226" Grid.RowSpan="2">
 
                 <!-- Students List Card -->
                 <Border Width="300" 
@@ -195,6 +202,56 @@
                         </Grid>
                     </Button>
                 </Border>
+                <!-- Attendance Card -->
+                <!--<Border Width="300" 
+        Height="200"
+        Margin="350,5,10,10"
+        Background="{StaticResource SurfaceBrush}"
+        CornerRadius="15">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="20" 
+                        ShadowDepth="0"
+                        Color="{StaticResource AccentPink}"
+                        Opacity="0.2"/>
+                    </Border.Effect>
+                    <Button Style="{StaticResource ModernButtonStyle}"
+            Click="BtnAttendance_Click"
+            Background="Transparent"
+            Width="300"
+            Height="200">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            --><!-- Icon --><!--
+                            <Path Grid.Row="0"
+                                  
+                  Data="M9 2A1 1 0 0 0 8 3V4H6A2 2 0 0 0 4 6V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V6A2 2 0 0 0 18 4H16V3A1 1 0 0 0 15 2H9M9 4H15V6H9V4M9 10H11V12H9V10M9 14H11V16H9V14M13 10H17V12H13V10M13 14H17V16H13V14Z"
+                  Width="50"
+                  Height="50"
+                  Fill="{StaticResource AccentGradientBrush}"
+                  Stretch="Uniform"
+                  Margin="0,20"/>
+
+                            --><!-- Text --><!--
+                            <StackPanel Grid.Row="1"
+                      VerticalAlignment="Center">
+                                <TextBlock Text="Attendance"
+                         FontSize="24"
+                         FontWeight="SemiBold"
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         HorizontalAlignment="Center"/>
+                                <TextBlock Text="Manage Attendance"
+                         FontSize="14"
+                         Foreground="{StaticResource TextSecondaryBrush}"
+                         HorizontalAlignment="Center"
+                         Margin="0,5"/>
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+                </Border>-->
             </WrapPanel>
         </Grid>
     </Grid>

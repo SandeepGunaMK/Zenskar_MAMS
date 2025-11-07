@@ -18,6 +18,7 @@
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="MaxWidth" Value="250"/>
         <Setter Property="Padding" Value="20,12"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">

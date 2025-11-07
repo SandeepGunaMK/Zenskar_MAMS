@@ -291,6 +291,23 @@ namespace Zenskar_MAMS.Windows
 
                     _dbContext.InsertData(insertQuery, parameters);
                     MessageBox.Show("Student added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    var SelectParameters = new SqlParameter[] {new("@name", TxtName.Text), new("@parentsName", TxtParentsName.Text) };                                
+                    string SelectStudentId = @"Select Student_ID From Student_Data where Name = @name and ParentsName = @parentsName";
+                    var StuDentId = _dbContext.SelectData(SelectStudentId, SelectParameters);
+
+                    string insertQuery2 = @"
+                        INSERT INTO Attendance ( Student_ID, Name, January, February, March, April, May, June, July, August, September, October, November, December )
+                        VALUES (@StudentId, @name, '00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025')";
+
+                    var parameters2 = new SqlParameter[]
+                 {
+                    new("@name", TxtName.Text),new("@StudentId", StuDentId.Rows[0]["Student_ID"])
+                 };
+                    _dbContext.InsertData(insertQuery2, parameters2);
+                    MessageBox.Show("Student added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+
                 }
                 else
                 {

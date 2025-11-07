@@ -38,7 +38,6 @@
                       VerticalAlignment="Center"
                       Margin="0,0,10,0"/>
             <ComboBox x:Name="CmbUserTypeFilter" 
-                      Foreground="{StaticResource TextPrimaryBrush}"
                      Width="120"
                      Margin="0,0,20,0"
                      SelectionChanged="CmbUserTypeFilter_SelectionChanged">

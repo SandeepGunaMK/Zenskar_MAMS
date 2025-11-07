@@ -4,7 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Students List - Zenskar MAMS" 
         Height="700" 
-        Width="1200"
+        Width="1300"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource SecondaryBackgroundBrush}">
     <Window.Resources>
@@ -279,6 +279,16 @@
                         </DataTemplate>
                     </DataGridTextColumn.HeaderTemplate>
                 </DataGridTextColumn>
+                <DataGridTextColumn Header="Due For Exam" 
+                  Binding="{Binding ExamDue}" 
+                  Width="*">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="Due For Exam"
+                          ContentTemplate="{StaticResource DataGridFilterHeaderTemplate}"/>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
 
@@ -293,6 +303,10 @@
                     Margin="0,0,10,0"/>
             <Button Content="View Details"
                     Click="BtnViewDetails_Click"
+                    Style="{StaticResource ModernButtonStyle}"
+                    Margin="0,0,10,0"/>
+            <Button Content="Attendance"
+                    Click="BtnViewAttendance_Click"
                     Style="{StaticResource ModernButtonStyle}"
                     Margin="0,0,10,0"/>
             <Button Content="Update Status"

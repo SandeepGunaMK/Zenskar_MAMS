@@ -148,67 +148,28 @@ namespace Zenskar_MAMS.Windows
         private void LoadStudents()
         {
             try
-            {
-                string query = "SELECT * FROM Student_Data";
-                
-                var parameters = _userType == "Instructor" 
-                    ? new SqlParameter[] { new("@userName", _userName) }
-                    : Array.Empty<SqlParameter>();
+            {                
+                string condition = "CASE \r\n" +
+                    "WHEN Belt = 'White' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 45 THEN 'Yes'\r\n" +
+                    "WHEN Belt = 'White Senior' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 60 THEN 'Yes'\r\n" +
+                    "WHEN Belt = 'Yellow' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 90 THEN 'Yes'\r\n" +
+                    "ELSE 'No'" +
+                    "END AS 'ExamDue' ";
 
-                _originalData = _dbContext.SelectData(query, parameters);
+                string query = "SELECT *," + condition + " FROM Student_Data";
+
+                //var parameters = _userType == "Instructor" 
+                //    ? new SqlParameter[] { new("@userName", _userName) }
+                //    : Array.Empty<SqlParameter>();
+
+                _originalData = _dbContext.SelectData(query);
                 StudentsGrid.ItemsSource = _originalData.DefaultView;
 
                 // Set alternating row colors
                 StudentsGrid.AlternationCount = 2;
                 GetDropDownValues();
 
-                #region
-                //#region Populate filter options for Location 
-                //var distinctLocations = _originalData.AsEnumerable()
-                //        .Select(r => r.Field<string>("Location"))
-                //        .Where(v => !string.IsNullOrEmpty(v))
-                //        .Distinct()
-                //        .Select(v => new BatchItem { Location = v }).ToList();
-                //distinctLocations.Insert(0, new BatchItem { Location = "All" });
-                //Location_BF = new ObservableCollection<BatchItem>(distinctLocations);
-                //#endregion
-                //#region Populate filter options for Batch
-                //var distinctBatchs = _originalData.AsEnumerable()
-                //        .Select(r => r.Field<string>("Belt"))
-                //        .Where(v => !string.IsNullOrEmpty(v))
-                //        .Distinct()
-                //        .Select(v => new BatchItem { Batch = v }).ToList();
-                //distinctBatchs.Insert(0, new BatchItem { Batch = "All" });
-                //Batch_BF = new ObservableCollection<BatchItem>(distinctBatchs);
-                //#endregion
-                //#region Populate filter options for Status
-                //var distinctStaus = _originalData.AsEnumerable()
-                //        .Select(r => r.Field<string>("StudentStatus"))
-                //        .Where(v => !string.IsNullOrEmpty(v))
-                //        .Distinct()
-                //        .Select(v => new BatchItem { Batch = v }).ToList();
-                //distinctStaus.Insert(0, new BatchItem { Batch = "All" });
-                //Status_BF = new ObservableCollection<BatchItem>(distinctStaus);
-                //#endregion
-                //#region Populate filter options for Instructor
-                //var distinctInstructor = _originalData.AsEnumerable()
-                //        .Select(r => r.Field<string>("InstructorName"))
-                //        .Where(v => !string.IsNullOrEmpty(v))
-                //        .Distinct()
-                //        .Select(v => new BatchItem { Batch = v }).ToList();
-                //distinctInstructor.Insert(0, new BatchItem { Batch = "All" });
-                //Instructor_BF = new ObservableCollection<BatchItem>(distinctInstructor);
-                //#endregion
-                //#region Populate filter options for Master
-                //var distinctMaster = _originalData.AsEnumerable()
-                //        .Select(r => r.Field<string>("MasterName"))
-                //        .Where(v => !string.IsNullOrEmpty(v))
-                //        .Distinct()
-                //        .Select(v => new BatchItem { Batch = v }).ToList();
-                //distinctMaster.Insert(0, new BatchItem { Batch = "All" });
-                //Master_BF = new ObservableCollection<BatchItem>(distinctMaster);
-                //#endregion
-                #endregion
+                
             }
             catch (Exception ex)
             {
@@ -389,7 +350,23 @@ namespace Zenskar_MAMS.Windows
                 LoadStudents();
             }
         }
-
+        private void BtnViewAttendance_Click(object sender, RoutedEventArgs e)
+        {
+            if (StudentsGrid.SelectedItem is DataRowView row)
+            {
+                var studentDetails = new Attendance(
+                    Convert.ToInt32(row["Student_ID"]),
+                    _userType,
+                    _userName
+                );
+                studentDetails.ShowDialog();
+                LoadStudents();
+            }
+            else
+            {
+                MessageBox.Show("Please select a student to view Attendance.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
         private void BtnViewDetails_Click(object sender, RoutedEventArgs e)
         {
             if (StudentsGrid.SelectedItem is DataRowView row)

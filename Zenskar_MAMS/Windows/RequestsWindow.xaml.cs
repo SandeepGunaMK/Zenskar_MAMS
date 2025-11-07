@@ -33,6 +33,14 @@ namespace Zenskar_MAMS.Windows
 
             LoadRequests();
         }
+        protected override void OnClosed(System.EventArgs e)
+        {
+            base.OnClosed(e);
+            if (Application.Current.Windows.Count == 1)
+            {
+                Application.Current.Shutdown();
+            }
+        }
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
             switch (_currentUserType)
@@ -140,7 +148,7 @@ namespace Zenskar_MAMS.Windows
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading requests: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                //MessageBox.Show($"Error loading requests: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
