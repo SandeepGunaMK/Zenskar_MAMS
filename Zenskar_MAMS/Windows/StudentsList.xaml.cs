@@ -31,6 +31,34 @@ namespace Zenskar_MAMS.Windows
         private ICollectionView _studentsView;
 
         #region Dropdown Filter Properties
+        private ObservableCollection<BatchItem> _monthYear_BF;
+        public ObservableCollection<BatchItem> MonthYear_BF
+        {
+            get => _monthYear_BF;
+            set { _monthYear_BF = value; OnPropertyChanged(nameof(MonthYear_BF)); }
+        }
+
+        private string _selectedMonthYear = "All";
+        public string SelectedMonthYear
+        {
+            get => _selectedMonthYear;
+            set { _selectedMonthYear = value; OnPropertyChanged(nameof(SelectedMonthYear)); }
+        }
+
+        private ObservableCollection<BatchItem> _lastExam_BF;
+        public ObservableCollection<BatchItem> LastExam_BF
+        {
+            get => _lastExam_BF;
+            set { _lastExam_BF = value; OnPropertyChanged(nameof(LastExam_BF)); }
+        }
+
+        private string _selectedLastExam = "All";
+        public string SelectedLastExam
+        {
+            get => _selectedLastExam;
+            set { _selectedLastExam = value; OnPropertyChanged(nameof(SelectedLastExam)); }
+        }
+
         private ObservableCollection<BatchItem> _location_BF;
         public ObservableCollection<BatchItem> Location_BF
         {
@@ -150,6 +178,7 @@ namespace Zenskar_MAMS.Windows
             try
             {                
                 string condition = "CASE \r\n" +
+                    "WHEN Belt = 'Non-Uniform' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 45 THEN 'Yes'\r\n" +
                     "WHEN Belt = 'White' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 45 THEN 'Yes'\r\n" +
                     "WHEN Belt = 'White Senior' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 60 THEN 'Yes'\r\n" +
                     "WHEN Belt = 'Yellow' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 90 THEN 'Yes'\r\n" +
@@ -183,6 +212,32 @@ namespace Zenskar_MAMS.Windows
         {
             try
             {
+                #region Populate filter options for DateOfJoining 
+                var distinctMonthYears = _originalData.AsEnumerable()
+                    .Select(r => r.Field<DateTime>("DateOfJoining"))
+                    .Where(v => v != null)
+                    .Select(v => v.ToString("MMMM yyyy"))
+                    .Distinct()
+                    .OrderByDescending(v => DateTime.ParseExact(v, "MMMM yyyy", null))
+                    .Select(v => new BatchItem { Batch = v })
+                    .ToList();
+                distinctMonthYears.Insert(0, new BatchItem { Batch = "All" });
+                MonthYear_BF = new ObservableCollection<BatchItem>(distinctMonthYears);
+                #endregion
+
+                #region Populate filter options for LastExamDate 
+                var distinctLastExam = _originalData.AsEnumerable()
+                    .Select(r => r.Field<DateTime>("LastExamDate"))
+                    .Where(v => v != null)
+                    .Select(v => v.ToString("MMMM yyyy"))
+                    .Distinct()
+                    .OrderByDescending(v => DateTime.ParseExact(v, "MMMM yyyy", null))
+                    .Select(v => new BatchItem { Batch = v })
+                    .ToList();
+                distinctLastExam.Insert(0, new BatchItem { Batch = "All" });
+                LastExam_BF = new ObservableCollection<BatchItem>(distinctLastExam);
+                #endregion
+
                 #region Populate filter options for Location 
                 var distinctLocations = _originalData.AsEnumerable()
                         .Select(r => r.Field<string>("Location"))
@@ -264,6 +319,21 @@ namespace Zenskar_MAMS.Windows
         private string addfilter()
         {
             string filter = "1=1"; // always true, helps build conditions easily
+
+            if (SelectedMonthYear != "All")
+            {
+                DateTime selectedDate = DateTime.ParseExact(SelectedMonthYear, "MMMM yyyy", null);
+                string startDate = selectedDate.ToString("yyyy-MM-01");
+                string endDate = selectedDate.AddMonths(1).ToString("yyyy-MM-01");
+                filter += $" AND DateOfJoining >= '{startDate}' AND DateOfJoining < '{endDate}'";
+            }
+            if (SelectedLastExam != "All")
+            {
+                DateTime selectedDate = DateTime.ParseExact(SelectedLastExam, "MMMM yyyy", null);
+                string startDate = selectedDate.ToString("yyyy-MM-01");
+                string endDate = selectedDate.AddMonths(1).ToString("yyyy-MM-01");
+                filter += $" AND LastExamDate >= '{startDate}' AND LastExamDate < '{endDate}'";
+            }
 
             if (SelectedLocation != "All")
                 filter += $" AND Location = '{SelectedLocation}'";
@@ -506,7 +576,9 @@ namespace Zenskar_MAMS.Windows
             Instructor.SelectedValue= "All";
             Master.SelectedValue= "All";
             Gender.SelectedValue= "All";
-            Age.SelectedValue= "All";
+            Age.SelectedIndex= 0;
+            MonthYearFilter.SelectedValue = "All";  
+            LastExam.SelectedValue = "All";
             AgeValue.Text= null;
             BatchFilterSelected(sender, e);
         }

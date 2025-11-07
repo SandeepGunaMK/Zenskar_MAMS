@@ -23,7 +23,7 @@ namespace Zenskar_MAMS.Windows
                 // Set up the timer
                 _timer = new DispatcherTimer
                 {
-                    Interval = TimeSpan.FromSeconds(3)
+                    Interval = TimeSpan.FromSeconds(1)
                 };
                 _timer.Tick += Timer_Tick;
                 _timer.Start();

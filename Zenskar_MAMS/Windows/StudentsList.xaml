@@ -164,6 +164,36 @@
                                     SelectedValue="{Binding SelectedGender, Mode=TwoWay}"
                                     SelectionChanged="BatchFilterSelected"/>
                 </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="0" Margin="5">
+                    <TextBlock Text="Joining"
+                             FontSize="15"
+                             Foreground="{StaticResource TextPrimaryBrush}"
+                             Margin="0,0,0,-25" />
+                    <ComboBox x:Name="MonthYearFilter"
+                            Width="248"
+                            Margin="10,5,5,5"
+                            Foreground="{StaticResource SecondaryBackgroundBrush}"
+                            ItemsSource="{Binding MonthYear_BF}"
+                            DisplayMemberPath="Batch"
+                            SelectedValuePath="Batch"
+                            SelectedValue="{Binding SelectedMonthYear, Mode=TwoWay}"
+                            SelectionChanged="BatchFilterSelected"/>
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="2" Margin="5">
+                    <TextBlock Text="Last Exam"
+                            FontSize="15"
+                            Foreground="{StaticResource TextPrimaryBrush}"
+                            Margin="0,0,0,-25" />
+                    <ComboBox x:Name="LastExam"
+                            Width="248"
+                            Margin="10,5,5,5"
+                            Foreground="{StaticResource SecondaryBackgroundBrush}"
+                            ItemsSource="{Binding LastExam_BF}"
+                            DisplayMemberPath="Batch"
+                            SelectedValuePath="Batch"
+                            SelectedValue="{Binding SelectedLastExam, Mode=TwoWay}"
+                            SelectionChanged="BatchFilterSelected"/>
+                </StackPanel>
                 <StackPanel Grid.Row="2" Grid.Column="1" Margin="5">
                     <TextBlock Text="Age"
                                 FontSize="15"
