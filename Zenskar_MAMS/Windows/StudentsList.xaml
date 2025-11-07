@@ -331,7 +331,11 @@
         <StackPanel Grid.Row="3" 
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
-                    Margin="10">
+                    Margin="10" Height="35">
+            <Button Content="Export"
+                    Click="BtnExport_Click"
+                    Style="{StaticResource ModernButtonStyle}"
+                    Margin="0,0,10,0"/>
             <Button Content="Add New Student"
                     Click="BtnAddStudent_Click"
                     Style="{StaticResource ModernButtonStyle}"

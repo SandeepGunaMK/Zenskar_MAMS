@@ -14,6 +14,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 using Zenskar_MAMS.Helpers;
+using ClosedXML.Excel;
+using Microsoft.Win32;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -28,10 +30,17 @@ namespace Zenskar_MAMS.Windows
         private readonly string _userType;
         private readonly string _userName;
         private DataTable _originalData;
+        private DataTable _filteredData;
         private Dictionary<string, HashSet<string>> _columnFilters;
         private ICollectionView _studentsView;
 
         #region Dropdown Filter Properties
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
         private ObservableCollection<BatchItem> _monthYear_BF;
         public ObservableCollection<BatchItem> MonthYear_BF
         {
@@ -146,12 +155,6 @@ namespace Zenskar_MAMS.Windows
 
         #endregion
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
         protected override void OnClosed(System.EventArgs e)
         {
             base.OnClosed(e);
@@ -177,6 +180,101 @@ namespace Zenskar_MAMS.Windows
         {
             LogoutHelper.Logout(this);
         }
+        private void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            ExportToExcel(sender, e, _filteredData);
+        }
+
+
+        private void ExportToExcel(object sender, RoutedEventArgs e, DataTable studentTable)
+        {
+            try
+            {
+                // Ask user for location
+                var saveDialog = new SaveFileDialog
+                {
+                    Filter = "Excel Workbook (*.xlsx)|*.xlsx",
+                    FileName = "Zenskar_List.xlsx"
+                };
+
+                if (saveDialog.ShowDialog() != true)
+                    return;
+
+                using (var wb = new XLWorkbook())
+                {
+                    var ws = wb.Worksheets.Add("Students_List");
+
+                    // Write headers
+                    ws.Cell(1, 1).Value = "SlNo"; ws.Cell(1, 1).Style.Font.Bold = true;
+                    ws.Cell(1, 2).Value = "Name"; ws.Cell(1, 2).Style.Font.Bold = true;
+                    ws.Cell(1, 3).Value = "Age"; ws.Cell(1, 3).Style.Font.Bold = true;
+                    ws.Cell(1, 4).Value = "Location"; ws.Cell(1, 4).Style.Font.Bold = true;
+                    ws.Cell(1, 5).Value = "Instructor Name"; ws.Cell(1, 5).Style.Font.Bold = true;
+                    ws.Cell(1, 6).Value = "Master Name"; ws.Cell(1, 6).Style.Font.Bold = true;
+                    ws.Cell(1, 7).Value = "Remarks"; ws.Cell(1, 7).Style.Font.Bold = true;
+
+                    int currentRow = 2;
+                    int slNo = 1;
+                    // Split data into groups
+                    var boysKids = studentTable.AsEnumerable()
+                        .Where(r => r["Gender"].ToString().Equals("Male", StringComparison.OrdinalIgnoreCase)
+                                 && Convert.ToInt32(r["Age"]) <= 15);
+                    var girlsKids = studentTable.AsEnumerable()
+                        .Where(r => r["Gender"].ToString().Equals("Female", StringComparison.OrdinalIgnoreCase)
+                                 && Convert.ToInt32(r["Age"]) <= 15);
+                    var boysAdults = studentTable.AsEnumerable()
+                        .Where(r => r["Gender"].ToString().Equals("Male", StringComparison.OrdinalIgnoreCase)
+                                 && Convert.ToInt32(r["Age"]) > 15);
+                    var girlsAdults = studentTable.AsEnumerable()
+                        .Where(r => r["Gender"].ToString().Equals("Female", StringComparison.OrdinalIgnoreCase)
+                                 && Convert.ToInt32(r["Age"]) > 15);
+
+                    // Helper function to write each group
+                    void WriteGroup(string groupName, IEnumerable<DataRow> rows)
+                    {
+                        ws.Cell(currentRow, 1).Value = groupName;
+                        ws.Range(currentRow, 1, currentRow, 7).Merge();
+                        ws.Row(currentRow).Style.Font.Bold = true;
+                        currentRow++;
+
+                        
+                        foreach (var row in rows)
+                        {
+                            ws.Cell(currentRow, 1).Value = slNo++;
+                            ws.Cell(currentRow, 2).Value = row["Name"]?.ToString() ?? "";
+                            ws.Cell(currentRow, 3).Value = Convert.ToInt32(row["Age"]);
+                            ws.Cell(currentRow, 4).Value = row["Location"]?.ToString() ?? "";
+                            ws.Cell(currentRow, 5).Value = row["InstructorName"]?.ToString() ?? "";
+                            ws.Cell(currentRow, 6).Value = row["MasterName"]?.ToString() ?? "";
+                            ws.Cell(currentRow, 7).Value = ""; // Remarks column empty
+                            currentRow++;
+                        }
+
+                        //currentRow++; // Blank line between groups
+                    }
+
+                    // Write groups
+                    WriteGroup("Girls Kids", girlsKids);
+                    WriteGroup("Boys Kids", boysKids);
+                    WriteGroup("Girls Adults", girlsAdults);
+                    WriteGroup("Boys Adults", boysAdults);
+
+                    // Apply styling
+                    ws.Columns().AdjustToContents();
+                    ws.RangeUsed().Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    ws.RangeUsed().Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                    wb.SaveAs(saveDialog.FileName);
+                }
+
+                MessageBox.Show("Excel Export Completed Successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error during export:\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        
         private void LoadStudents()
         {
             try
@@ -318,6 +416,7 @@ namespace Zenskar_MAMS.Windows
                 return;
             }
             StudentsGrid.ItemsSource = filteredRows.CopyToDataTable().DefaultView;
+            _filteredData = filteredRows.CopyToDataTable();
         }
 
         private string addfilter()
