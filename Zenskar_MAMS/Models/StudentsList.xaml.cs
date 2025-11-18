@@ -178,7 +178,7 @@ namespace Zenskar_MAMS.Windows
         }
         private void BtnLogout_Click(object sender, RoutedEventArgs e)
         {
-            LogoutHelper.Logout(this);
+            LogoutHelper.Logout(this); OnClosed(e);
         }
         private void BtnExport_Click(object sender, RoutedEventArgs e)
         {

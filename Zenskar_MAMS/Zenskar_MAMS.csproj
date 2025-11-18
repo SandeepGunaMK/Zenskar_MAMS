@@ -26,6 +26,20 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="DBContext.cs" />
     <Compile Include="Helpers\LogoutHelper.cs" />
+    <Compile Include="Models\AdminHome.xaml.cs" />
+    <Compile Include="Models\Attendance.xaml.cs" />
+    <Compile Include="Models\FilterWindow.xaml.cs" />
+    <Compile Include="Models\InstructorHome.xaml.cs" />
+    <Compile Include="Models\Login.xaml.cs" />
+    <Compile Include="Models\MasterHome.xaml.cs" />
+    <Compile Include="Models\Register.xaml.cs" />
+    <Compile Include="Models\RejectReasonWindow.xaml.cs" />
+    <Compile Include="Models\RequestDetailsWindow.xaml.cs" />
+    <Compile Include="Models\RequestsWindow.xaml.cs" />
+    <Compile Include="Models\SplashScreen.xaml.cs" />
+    <Compile Include="Models\StudentDetails.xaml.cs" />
+    <Compile Include="Models\StudentsList.xaml.cs" />
+    <Compile Include="Models\UserManagement.xaml.cs" />
   </ItemGroup>
 
   <ItemGroup>

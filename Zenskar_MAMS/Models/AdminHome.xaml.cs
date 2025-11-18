@@ -6,15 +6,24 @@ using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
-    public partial class MasterHome : Window
+    public partial class AdminHome : Window
     {
         private readonly string _userName;
         private readonly DBContext _dbContext;
         private readonly string _userType;
         private DataTable _DBData;
 
-        public MasterHome(string userName)
+        protected override void OnClosed(System.EventArgs e)
         {
+            base.OnClosed(e);
+            if (Application.Current.Windows.Count == 1)
+            {
+                Application.Current.Shutdown();
+            }
+        }
+        public AdminHome(string userName = "Admin")
+        {
+            DataContext = this;
             _dbContext = new DBContext();
             InitializeComponent();
             _userName = userName;
@@ -23,19 +32,34 @@ namespace Zenskar_MAMS.Windows
 
         private void BtnStudentsList_Click(object sender, RoutedEventArgs e)
         {
-            var studentsList = new StudentsList("Master", _userName);
+            var studentsList = new StudentsList("Admin", _userName);
+            this.Close();
             studentsList.ShowDialog();
+        }
+        private void BtnAttendance_Click(object sender, RoutedEventArgs e)
+        {
+            var attendance = new Attendance();
+            this.Close();
+            attendance.ShowDialog();
         }
 
         private void BtnRequests_Click(object sender, RoutedEventArgs e)
         {
+            var requestsWindow = new RequestsWindow("Admin", _userName);
             this.Close();
-            var requestsWindow = new RequestsWindow("Master", _userName);
             requestsWindow.ShowDialog();
         }
-        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+
+        private void BtnManageUsers_Click(object sender, RoutedEventArgs e)
         {
-            LogoutHelper.Logout(this);
+            var userManagement = new UserManagement();
+            this.Close();
+            userManagement.ShowDialog();
+        }
+
+        private void CallLoadExamDueBatchs(object sender, RoutedEventArgs e)
+        {
+            LoadExamDueBatchs();
         }
         private void LoadExamDueBatchs()
         {
@@ -49,11 +73,10 @@ namespace Zenskar_MAMS.Windows
                     "END AS 'ExamDue' ";
 
                 string query = "SELECT Distinct Location,Belt,InstructorName,MasterName, " + condition + " FROM Student_Data" +
-                    " where MasterName = '@master' " +
-                    "AND StudentStatus = 'Active'";
-                var parameter = new SqlParameter[] { new("@master", _userName) };
-                _DBData = _dbContext.SelectData(query, parameter);
+                    " where StudentStatus = 'Active'";
+                _DBData = _dbContext.SelectData(query);
                 DataRow[] examDueStudents = _DBData.Select("ExamDue = 'Yes'");
+                ExamDueCountText.Text = $"Exam Due Batches: {examDueStudents.Length}";
                 DisplayExamDueBatchs(examDueStudents);
             }
             catch (Exception ex)
@@ -63,6 +86,10 @@ namespace Zenskar_MAMS.Windows
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            LogoutHelper.Logout(this); OnClosed(e);
         }
         private void DisplayExamDueBatchs(DataRow[] examDueStudents)
         {
@@ -90,6 +117,7 @@ namespace Zenskar_MAMS.Windows
 
             MessageBox.Show(sb.ToString(), "Exam Due Batches", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
 
     }
 }

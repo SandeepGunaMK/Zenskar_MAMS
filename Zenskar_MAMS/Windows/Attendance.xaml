@@ -97,7 +97,7 @@
                                 FontSize="30"
                                 Height="40"
                                 Margin="150,-25,5,5"
-                               MouseLeftButtonDown="UpdateTotalNoofClasses" Cursor="Hand"/>
+                               MouseLeftButtonDown="UpdateTotalNoofClasses" Cursor="Hand" Width="45"/>
                 </StackPanel>
             </Grid>
         </Expander>
