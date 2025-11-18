@@ -1,0 +1,36 @@
+name: Build WPF App
+
+on:
+  push:
+    branches: [ Development ]
+  pull_request:
+    branches: [ Development ]
+  workflow_dispatch:   # allows manual trigger
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0'   # or your project version
+
+    - name: Restore NuGet packages
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build --configuration Release
+
+    - name: Publish WPF App
+      run: dotnet publish ./Zenskar_MAMS/Zenskar_MAMS.csproj -c Release -o publish
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Zenskar_MAMS-Build
+        path: publish
