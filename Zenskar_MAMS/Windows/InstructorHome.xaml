@@ -15,15 +15,25 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" 
+                    Orientation="Horizontal"
+                    VerticalAlignment="Top"
                     Background="{StaticResource PrimaryBackgroundBrush}"
                     Margin="10,10,10,10">
-            <TextBlock Text="Instructor Dashboard"
+            
+            <Button x:Name="BtnChangePassword"
+                    Content="Change Password"
+                    Click="BtnChangePassword_Click"
+                    Margin="10,0,10,0"
+                    Height="30"
+                    Style="{StaticResource ModernButtonStyle}"/>
+
+            <TextBlock Margin="160,0" Text="Instructor Dashboard"
                       Foreground="{StaticResource TextPrimaryBrush}"
                       FontSize="24" Width="228"/>
             <Button x:Name="BtnLogout"
                 Content="Logout"
                 Click="BtnLogout_Click"
-                Margin="500,-25,15,10"
+                Margin="-10,5,15,10"
                 Style="{StaticResource LogoutButtonStyle}"/>
         </StackPanel>
 

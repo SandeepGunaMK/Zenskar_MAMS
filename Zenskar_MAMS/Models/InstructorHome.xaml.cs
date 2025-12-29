@@ -29,6 +29,21 @@ namespace Zenskar_MAMS.Windows
                 Close();
             }
         }
+
+        private void BtnChangePassword_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dlg = new ChangePasswordWindow();
+                dlg.Owner = this;
+                dlg.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening Change Password dialog: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void BtnLogout_Click(object sender, RoutedEventArgs e)
         {
             LogoutHelper.Logout(this); OnClosed(e);
