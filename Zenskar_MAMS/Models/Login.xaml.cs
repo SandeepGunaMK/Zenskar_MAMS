@@ -1,7 +1,10 @@
+using Microsoft.Data.SqlClient;
+using MongoDB.Driver;
 using System;
+using System.Configuration;
 using System.Data;
 using System.Windows;
-using Microsoft.Data.SqlClient;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -38,19 +41,34 @@ namespace Zenskar_MAMS.Windows
                         MessageBoxImage.Warning);
                     return;
                 }
+                #region OldQuery 
+                //var parameters = new SqlParameter[]
+                //{
+                //    new("@loginId", TxtLoginId.Text),
+                //    new("@password", TxtPassword.Password)
+                //};
 
-                var parameters = new SqlParameter[]
-                {
-                    new("@loginId", TxtLoginId.Text),
-                    new("@password", TxtPassword.Password)
-                };
+                //string query = @"
+                //    SELECT User_ID, User_Name, User_Type, Status 
+                //    FROM User_Table 
+                //    WHERE login_ID = @loginId AND Password = @password";
 
-                string query = @"
-                    SELECT User_ID, User_Name, User_Type, Status 
-                    FROM User_Table 
-                    WHERE login_ID = @loginId AND Password = @password";
+                //DataTable result = _dbContext.SelectData(query, parameters);
+                #endregion
+                #region MongoDb
+                var filter = Builders<UserTable>.Filter.Eq(x => x.login_ID, TxtLoginId.Text) & Builders<UserTable>.Filter.Eq(x => x.Password,TxtPassword.Password);
+                var projection = Builders<UserTable>.Projection
+                                 .Include(x => x.User_ID)
+                                 .Include(x => x.User_Name)
+                                 .Include(x => x.User_Type)
+                                 .Include(x => x.Status)
+                                 .Exclude("_id");                                 
+                var col = common.Db.GetCollection<UserTable>("Users");
+                var resList = col.Find(filter).Project<LoginUser1>(projection).ToList();
+                DataTable result = common.ToDataTable(resList);
+                #endregion
 
-                DataTable result = _dbContext.SelectData(query, parameters);
+
 
                 if (result.Rows.Count == 0)
                 {

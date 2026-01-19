@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
+    <PackageReference Include="MongoDB.Driver" Version="3.6.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
   </ItemGroup>
 
@@ -26,6 +27,8 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="DBContext.cs" />
     <Compile Include="Helpers\LogoutHelper.cs" />
+    <Compile Include="Helpers\TableModel.cs" />
+    <Compile Include="Helpers\ViewModels.cs" />
     <Compile Include="Models\AdminHome.xaml.cs" />
     <Compile Include="Models\Attendance.xaml.cs" />
     <Compile Include="Models\FilterWindow.xaml.cs" />
