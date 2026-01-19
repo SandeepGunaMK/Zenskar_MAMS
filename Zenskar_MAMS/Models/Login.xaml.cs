@@ -56,16 +56,16 @@ namespace Zenskar_MAMS.Windows
                 //DataTable result = _dbContext.SelectData(query, parameters);
                 #endregion
                 #region MongoDb
-                var filter = Builders<UserTable>.Filter.Eq(x => x.login_ID, TxtLoginId.Text) & Builders<UserTable>.Filter.Eq(x => x.Password,TxtPassword.Password);
+                var filter = Builders<UserTable>.Filter.Eq(x => x.Login_ID, TxtLoginId.Text) & Builders<UserTable>.Filter.Eq(x => x.Password,TxtPassword.Password);
                 var projection = Builders<UserTable>.Projection
                                  .Include(x => x.User_ID)
                                  .Include(x => x.User_Name)
                                  .Include(x => x.User_Type)
                                  .Include(x => x.Status)
                                  .Exclude("_id");                                 
-                var col = common.Db.GetCollection<UserTable>("Users");
-                var resList = col.Find(filter).Project<LoginUser1>(projection).ToList();
-                DataTable result = common.ToDataTable(resList);
+                var col = CommonItems.Db.GetCollection<UserTable>("Users");
+                var resList = col.Find(filter).Project<LoginUser>(projection).ToList();
+                DataTable result = CommonItems.ToDataTable(resList);
                 #endregion
 
 

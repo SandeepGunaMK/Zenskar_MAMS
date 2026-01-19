@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Zenskar_MAMS.Helpers
 {
-    public class common
+    public class CommonItems
     {
         public static MongoClientSettings settings = MongoClientSettings.FromConnectionString(ConfigurationManager.ConnectionStrings["MongoDb"].ConnectionString);
         public static MongoClient client = new MongoClient(settings);
@@ -41,7 +41,7 @@ namespace Zenskar_MAMS.Helpers
         }
     }
     
-    public class LoginUser1
+    public class LoginUser
     {
         public int User_ID { get; set; }
         public string User_Name { get; set; }
