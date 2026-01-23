@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,7 +44,8 @@ namespace Zenskar_MAMS.Helpers
 
     public class AttendanceTable
     {
-        public string Student_ID { get; set; }
+        public ObjectId _id { get; set; }
+        public int Student_ID { get; set; }
         public string Name { get; set; }
         public string January { get; set; }
         public string February { get; set; }

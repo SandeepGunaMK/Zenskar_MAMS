@@ -1,10 +1,13 @@
 ﻿using Azure;
 using Microsoft.Data.SqlClient;
 using Microsoft.VisualBasic;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -88,27 +91,68 @@ namespace Zenskar_MAMS.Windows
         }
         private void UpdateNoofClassesAttended(object sender, RoutedEventArgs e)
         {
+            #region OldQuery
+            //try
+            //{
+            //    string input = Interaction.InputBox("Enter No Of Classes Attended", "Attendance", _AttendedClasses);
+            //    if (input == "") { MessageBox.Show("Input cannot be empty", "Attendance"); return; }
+            //    else if (int.Parse(input) > int.Parse(_TotalClasses))
+            //    {
+            //        MessageBox.Show("Attended classes cannot be more than total classes", "Attendance");
+            //        return;
+            //    }
+            //    else { _AttendedClasses = input; }
+
+            //    string updateValue = _AttendedClasses + "-" + _TotalClasses + "-" + _year;
+            //    string query = "UPDATE Attendance SET " +
+            //                   (Month.SelectedItem as ComboBoxItem)?.Content?.ToString() +
+            //                   " = '" + updateValue +
+            //                   "' WHERE Student_ID = @studentId";
+            //    var parameters = new SqlParameter[]
+            //                {
+            //                new("@studentId", _studentId)
+            //                };
+            //    _dbContext.UpdateData(query, parameters);
+            //    LoadAttendanceData();
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show(ex.Message, "Attendance");
+            //}
+            #endregion
+            #region MongoDb
             try
             {
                 string input = Interaction.InputBox("Enter No Of Classes Attended", "Attendance", _AttendedClasses);
-                if (input == "") { MessageBox.Show("Input cannot be empty", "Attendance"); return; }
-                else if (int.Parse(input) > int.Parse(_TotalClasses))
+
+                if (!int.TryParse(input, out int totalClasses))
                 {
-                    MessageBox.Show("Attended classes cannot be more than total classes", "Attendance");
+                    MessageBox.Show("Invalid number", "Attendance");
                     return;
                 }
-                else { _AttendedClasses = input; }
 
-                string updateValue = _AttendedClasses + "-" + _TotalClasses + "-" + _year;
-                string query = "UPDATE Attendance SET " +
-                               (Month.SelectedItem as ComboBoxItem)?.Content?.ToString() +
-                               " = '" + updateValue +
-                               "' WHERE Student_ID = @studentId";
-                var parameters = new SqlParameter[]
-                            {
-                            new("@studentId", _studentId)
-                            };
-                _dbContext.UpdateData(query, parameters);
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    MessageBox.Show("Input cannot be empty", "Attendance");
+                    return;
+                }
+
+                _AttendedClasses = input;
+                string updateValue = $"{_AttendedClasses}-{_TotalClasses}-{_year}";
+                string monthField = (Month.SelectedItem as ComboBoxItem)?.Content?.ToString();
+
+                if (string.IsNullOrEmpty(monthField))
+                {
+                    MessageBox.Show("Please select month", "Attendance");
+                    return;
+                }
+
+                var col = CommonItems.Db.GetCollection<BsonDocument>("Attendance");
+                var filter = Builders<BsonDocument>.Filter.Eq("Student_ID", _studentId);
+                var update = Builders<BsonDocument>.Update
+                    .Set(monthField, updateValue);   // 🔥 Dynamic column update
+                col.UpdateOne(filter, update);
+
                 LoadAttendanceData();
             }
             catch (Exception ex)
@@ -116,26 +160,69 @@ namespace Zenskar_MAMS.Windows
                 MessageBox.Show(ex.Message, "Attendance");
             }
         }
+        #endregion
+        
 
         private void UpdateTotalNoofClasses(object sender, RoutedEventArgs e)
         {
+            #region OldQuery
+            //try
+            //{
+            //    string input = Interaction.InputBox("Enter No Of Classes Attended", "Attendance", _TotalClasses);
+            //    if (int.Parse(input)>1){ }
+            //    if (input == "") { MessageBox.Show("Input cannot be empty", "Attendance"); return; }
+            //    else { _TotalClasses = input; }
+
+            //    string updateValue = _AttendedClasses + "-" + _TotalClasses + "-" + _year;
+            //    string query = "UPDATE Attendance SET " +
+            //                   (Month.SelectedItem as ComboBoxItem)?.Content?.ToString() +
+            //                   " = '" + updateValue +
+            //                   "' WHERE Student_ID = @studentId";
+            //    var parameters = new SqlParameter[]
+            //                {
+            //                new("@studentId", _studentId)
+            //                };
+            //    _dbContext.UpdateData(query, parameters);
+            //    LoadAttendanceData();
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show(ex.Message, "Attendance");
+            //}
+            #endregion
+            #region MongoDb
             try
             {
                 string input = Interaction.InputBox("Enter No Of Classes Attended", "Attendance", _TotalClasses);
-                if (int.Parse(input)>1){ }
-                if (input == "") { MessageBox.Show("Input cannot be empty", "Attendance"); return; }
-                else { _TotalClasses = input; }
 
-                string updateValue = _AttendedClasses + "-" + _TotalClasses + "-" + _year;
-                string query = "UPDATE Attendance SET " +
-                               (Month.SelectedItem as ComboBoxItem)?.Content?.ToString() +
-                               " = '" + updateValue +
-                               "' WHERE Student_ID = @studentId";
-                var parameters = new SqlParameter[]
-                            {
-                            new("@studentId", _studentId)
-                            };
-                _dbContext.UpdateData(query, parameters);
+                if (!int.TryParse(input, out int totalClasses))
+                {
+                    MessageBox.Show("Invalid number", "Attendance");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    MessageBox.Show("Input cannot be empty", "Attendance");
+                    return;
+                }
+
+                _TotalClasses = input;
+                string updateValue = $"{_AttendedClasses}-{_TotalClasses}-{_year}";
+                string monthField = (Month.SelectedItem as ComboBoxItem)?.Content?.ToString();
+
+                if (string.IsNullOrEmpty(monthField))
+                {
+                    MessageBox.Show("Please select month", "Attendance");
+                    return;
+                }
+
+                var col = CommonItems.Db.GetCollection<BsonDocument>("Attendance");
+                var filter = Builders<BsonDocument>.Filter.Eq("Student_ID", _studentId);
+                var update = Builders<BsonDocument>.Update
+                    .Set(monthField, updateValue);   // 🔥 Dynamic column update
+                col.UpdateOne(filter, update);
+
                 LoadAttendanceData();
             }
             catch (Exception ex)
@@ -143,6 +230,7 @@ namespace Zenskar_MAMS.Windows
                 MessageBox.Show(ex.Message, "Attendance");
             }
         }
+        #endregion
 
         private void LoadAttendanceData()
         {
@@ -152,10 +240,34 @@ namespace Zenskar_MAMS.Windows
                 string query;
                 string? SelectedMonth = (Month.SelectedItem as ComboBoxItem)?.Content?.ToString();
                 var parameters = new SqlParameter[] { new("@studentId", _studentId) };
-                if (SelectedMonth == "All" || SelectedMonth == null) { query = "SELECT * FROM Attendance WHERE Student_ID = @studentId"; }
-                else { query = "SELECT Name, " + SelectedMonth + " FROM Attendance WHERE Student_ID = @studentId";}
+                System.Collections.Generic.List<AttendanceTable> resList = new System.Collections.Generic.List<AttendanceTable>();
 
-                var result = _dbContext.SelectData(query, parameters);
+
+                #region OldQuery
+                //if (SelectedMonth == "All" || SelectedMonth == null) { query = "SELECT * FROM Attendance WHERE Student_ID = @studentId"; }
+                //else { query = "SELECT Name, " + SelectedMonth + " FROM Attendance WHERE Student_ID = @studentId";}
+                //var result = _dbContext.SelectData(query, parameters);
+                #endregion
+                #region MongoDb
+                var filter = Builders<AttendanceTable>.Filter.Eq(x => x.Student_ID, _studentId);
+                var col = CommonItems.Db.GetCollection<AttendanceTable>("Attendance");
+                if (SelectedMonth == "All" || SelectedMonth == null) {
+                    var projectionAll = Builders<AttendanceTable>.Projection
+                                 .Exclude("_id");
+                    resList = col.Find(filter).Project<AttendanceTable>(projectionAll).ToList(); 
+                }
+                else {
+                    var projectionMonth = Builders<AttendanceTable>.Projection
+                                 .Include("Name")
+                                 .Include(SelectedMonth)
+                                 .Exclude("_id"); 
+                    resList = col.Find(filter).Project<AttendanceTable>(projectionMonth).ToList(); 
+                }
+                    #endregion
+
+                DataTable result = CommonItems.ToDataTable(resList);
+
+
                 if (result != null)
                 {
                     _StudentName = result.Rows[0]["Name"].ToString();

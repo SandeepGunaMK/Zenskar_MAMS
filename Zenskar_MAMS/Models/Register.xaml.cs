@@ -1,8 +1,11 @@
+using Microsoft.Data.SqlClient;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using System;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Windows;
-using Microsoft.Data.SqlClient;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -104,32 +107,63 @@ namespace Zenskar_MAMS.Windows
 
             return true;
         }
+        #region OldQuery 
+        //private string GenerateLoginIdOld(string userName)
+        //{
+        //    // Remove spaces and special characters
+        //    string baseName = Regex.Replace(userName, @"[^a-zA-Z]", "").ToUpper();
 
+        //    // Take first 4 characters (or pad with 'X' if too short)
+        //    baseName = (baseName + "XXXX").Substring(0, 4);
+
+        //    // Get current max number for this base
+        //    string query = $"SELECT MAX(login_ID) FROM User_Table WHERE login_ID LIKE '{baseName}%'";
+        //    var result = _dbContext.SelectData(query);
+
+        //    int nextNum = 1;
+        //    if (result.Rows[0][0] != DBNull.Value)
+        //    {
+        //        string lastId = result.Rows[0][0].ToString();
+        //        if (int.TryParse(lastId.Substring(4), out int lastNum))
+        //        {
+        //            nextNum = lastNum + 1;
+        //        }
+        //    }
+
+        //    return $"{baseName}{nextNum:D3}";
+        //}
+        #endregion
+        #region MongoDb
         private string GenerateLoginId(string userName)
         {
-            // Remove spaces and special characters
-            string baseName = Regex.Replace(userName, @"[^a-zA-Z]", "").ToUpper();
-            
-            // Take first 4 characters (or pad with 'X' if too short)
+            string baseName = Regex.Replace(userName, @"[^a-zA-Z]", "")
+                                   .ToUpper();
+
             baseName = (baseName + "XXXX").Substring(0, 4);
-            
-            // Get current max number for this base
-            string query = $"SELECT MAX(login_ID) FROM User_Table WHERE login_ID LIKE '{baseName}%'";
-            var result = _dbContext.SelectData(query);
-            
+
+            var col = CommonItems.Db.GetCollection<BsonDocument>("Users");
+
+            var filter = Builders<BsonDocument>.Filter.Regex(
+                "Login_ID",
+                new BsonRegularExpression($"^{baseName}[0-9]{{3}}$")
+            );
+
+            var lastDoc = col.Find(filter)
+                             .Sort(Builders<BsonDocument>.Sort.Descending("Login_ID"))
+                             .Limit(1)
+                             .FirstOrDefault();
+
             int nextNum = 1;
-            if (result.Rows[0][0] != DBNull.Value)
+
+            if (lastDoc != null)
             {
-                string lastId = result.Rows[0][0].ToString();
-                if (int.TryParse(lastId.Substring(4), out int lastNum))
-                {
-                    nextNum = lastNum + 1;
-                }
+                string lastId = lastDoc["Login_ID"].AsString;
+                nextNum = int.Parse(lastId.Substring(4)) + 1;
             }
 
             return $"{baseName}{nextNum:D3}";
         }
-
+        #endregion
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
