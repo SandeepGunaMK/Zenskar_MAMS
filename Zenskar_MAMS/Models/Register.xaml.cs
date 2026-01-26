@@ -1,3 +1,5 @@
+using Azure.Core;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Data.SqlClient;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -11,7 +13,7 @@ namespace Zenskar_MAMS.Windows
 {
     public partial class Register : Window
     {
-        private readonly DBContext _dbContext;
+        private readonly DBContext _dbContext;        
 
         public Register()
         {
@@ -28,38 +30,103 @@ namespace Zenskar_MAMS.Windows
             {
                 // Generate unique login ID
                 string loginId = GenerateLoginId(TxtUserName.Text);
-                
+
+                #region OldQuery 
                 // Insert new user
-                var parameters = new SqlParameter[]
+                //var parameters = new SqlParameter[]
+                //{
+                //    new("@loginId", loginId),
+                //    new("@userName", TxtUserName.Text),
+                //    new("@contactNumber", TxtContactNumber.Text),
+                //    new("@password", TxtNewPassword.Password),
+                //    new("@userType", RbMaster.IsChecked == true ? "Master" : "Instructor"),
+                //    new("@status", "Pending Approval"),
+                //    new("@createdDate", DateTime.Now)
+                //};
+
+                //string insertQuery = @"
+                //    INSERT INTO User_Table (login_ID, User_Name, Contact_Number, Password, User_Type, Status, Created_Date)
+                //    VALUES (@loginId, @userName, @contactNumber, @password, @userType, @status, @createdDate)";
+
+                //_dbContext.InsertData(insertQuery, parameters);
+
+                //// Create registration request
+                //var requestParams = new SqlParameter[]
+                //{
+                //    new("@requestType", "Registration"),
+                //    new("@requestedBy", TxtUserName.Text),
+                //    new("@requestedDate", DateTime.Now)
+                //};
+
+                //string requestQuery = @"
+                //    INSERT INTO Requests (RequestType, RequestedBy, Status, RequestedDate)
+                //    VALUES (@requestType, @requestedBy, 'Open', @requestedDate)";
+
+                //_dbContext.InsertData(requestQuery, requestParams);
+                #endregion
+                #region MongoDb
+                // Get next User_ID
+                int nextUserId = 1;
+
+                var lastUser = CommonItems._mongoContext.Users
+                    .Find(Builders<UserTable>.Filter.Empty)
+                    .SortByDescending(u => u.User_ID)
+                    .Limit(1)
+                    .FirstOrDefault();
+
+                if (lastUser != null)
                 {
-                    new("@loginId", loginId),
-                    new("@userName", TxtUserName.Text),
-                    new("@contactNumber", TxtContactNumber.Text),
-                    new("@password", TxtNewPassword.Password),
-                    new("@userType", RbMaster.IsChecked == true ? "Master" : "Instructor"),
-                    new("@status", "Pending Approval"),
-                    new("@createdDate", DateTime.Now)
+                    nextUserId = lastUser.User_ID + 1;
+                }
+                // Insert new user
+                var user = new UserTable
+                {
+                    User_ID = nextUserId, // MUST be set if used in logic
+                    Login_ID = loginId,
+                    User_Name = TxtUserName.Text,
+                    Contact_Number = TxtContactNumber.Text,
+                    Password = TxtNewPassword.Password,
+                    User_Type = RbMaster.IsChecked == true ? "Master" : "Instructor",
+                    Status = "Pending Approval",
+                    Created_Date = DateTime.Now,
+                    Approved_By = null,
+                    Approved_Date = null
                 };
 
-                string insertQuery = @"
-                    INSERT INTO User_Table (login_ID, User_Name, Contact_Number, Password, User_Type, Status, Created_Date)
-                    VALUES (@loginId, @userName, @contactNumber, @password, @userType, @status, @createdDate)";
+                CommonItems._mongoContext.Users.InsertOne(user);
+                int nextReqId = 1;
 
-                _dbContext.InsertData(insertQuery, parameters);
+                var lastReq = CommonItems._mongoContext.Requests
+                    .Find(Builders<RequestTable>.Filter.Empty)
+                    .SortByDescending(r => r.Request_ID)
+                    .Limit(1)
+                    .Project(r => new RequestTable
+                    {
+                        Request_ID = r.Request_ID
+                    })
+                    .FirstOrDefault();
 
+                if (lastReq != null)
+                {
+                    nextReqId = lastReq.Request_ID + 1;
+                }
                 // Create registration request
-                var requestParams = new SqlParameter[]
+                var request = new RequestTable
                 {
-                    new("@requestType", "Registration"),
-                    new("@requestedBy", TxtUserName.Text),
-                    new("@requestedDate", DateTime.Now)
+                    Request_ID = nextReqId, // MUST be set if used in logic
+                    RequestType = "Registration",
+                    RequestedBy = TxtUserName.Text,
+                    Status = "Open",
+                    RequestedDate = DateTime.Now,
+                    ApprovedBy = null,
+                    ApprovedDate = null,
+                    RejectedReason = null,
+                    UpdatedData = null
                 };
 
-                string requestQuery = @"
-                    INSERT INTO Requests (RequestType, RequestedBy, Status, RequestedDate)
-                    VALUES (@requestType, @requestedBy, 'Open', @requestedDate)";
+                CommonItems._mongoContext.Requests.InsertOne(request);
+                #endregion
 
-                _dbContext.InsertData(requestQuery, requestParams);
 
                 MessageBox.Show($"Registration successful!\nYour Login ID is: {loginId}\n\nPlease wait for admin approval before logging in.",
                     "Registration Success", MessageBoxButton.OK, MessageBoxImage.Information);

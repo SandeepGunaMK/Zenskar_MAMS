@@ -28,7 +28,7 @@
     <Compile Include="DBContext.cs" />
     <Compile Include="Helpers\LogoutHelper.cs" />
     <Compile Include="Helpers\TableModel.cs" />
-    <Compile Include="Helpers\ViewModels.cs" />
+    <Compile Include="Helpers\Helper.cs" />
     <Compile Include="Models\AdminHome.xaml.cs" />
     <Compile Include="Models\Attendance.xaml.cs" />
     <Compile Include="Models\FilterWindow.xaml.cs" />
