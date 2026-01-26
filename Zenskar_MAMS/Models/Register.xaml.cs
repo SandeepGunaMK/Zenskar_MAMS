@@ -81,7 +81,7 @@ namespace Zenskar_MAMS.Windows
                 // Insert new user
                 var user = new UserTable
                 {
-                    User_ID = nextUserId, // MUST be set if used in logic
+                    User_ID = nextUserId,
                     Login_ID = loginId,
                     User_Name = TxtUserName.Text,
                     Contact_Number = TxtContactNumber.Text,
@@ -113,7 +113,7 @@ namespace Zenskar_MAMS.Windows
                 // Create registration request
                 var request = new RequestTable
                 {
-                    Request_ID = nextReqId, // MUST be set if used in logic
+                    Request_ID = nextReqId,
                     RequestType = "Registration",
                     RequestedBy = TxtUserName.Text,
                     Status = "Open",
