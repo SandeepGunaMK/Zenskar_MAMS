@@ -63,6 +63,15 @@ namespace Zenskar_MAMS.Helpers
 
             return dt;
         }
+        public static DataTable ToDataTableLong(long input)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Value", typeof(long));
+            DataRow row = dt.NewRow();
+            row["Value"] = input;
+            dt.Rows.Add(row);
+            return dt;
+        }
     }
     
     public class LoginUser

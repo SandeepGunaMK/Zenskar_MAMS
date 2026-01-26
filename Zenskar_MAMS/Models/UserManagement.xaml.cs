@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using MongoDB.Driver;
 using System;
 using System.Data;
 using System.Text;
@@ -137,19 +138,44 @@ namespace Zenskar_MAMS.Windows
                 menu.IsOpen = true;
             }
         }
+        #region OldQuery
+        //private void ChangeUserStatus(int userId, string newStatus)
+        //{
+        //    try
+        //    {
+        //        var parameters = new SqlParameter[]
+        //        {
+        //            new("@userId", userId),
+        //            new("@status", newStatus)
+        //        };
 
+        //        string query = "UPDATE User_Table SET Status = @status WHERE User_ID = @userId";
+        //        _dbContext.UpdateData(query, parameters);
+
+        //        MessageBox.Show("User status updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+        //        LoadUsers();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error updating user status: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        //    }
+        //}
+        #endregion
+        #region MongoDb
         private void ChangeUserStatus(int userId, string newStatus)
         {
             try
             {
-                var parameters = new SqlParameter[]
-                {
-                    new("@userId", userId),
-                    new("@status", newStatus)
-                };
+                var filter = Builders<UserTable>.Filter.Eq(u => u.User_ID, userId);
+                var update = Builders<UserTable>.Update.Set(u => u.Status, newStatus);
 
-                string query = "UPDATE User_Table SET Status = @status WHERE User_ID = @userId";
-                _dbContext.UpdateData(query, parameters);
+                var result = CommonItems._mongoContext.Users.UpdateOne(filter, update);
+
+                if (result.MatchedCount == 0)
+                {
+                    MessageBox.Show("User not found.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
 
                 MessageBox.Show("User status updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadUsers();
@@ -159,6 +185,8 @@ namespace Zenskar_MAMS.Windows
                 MessageBox.Show($"Error updating user status: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        #endregion
+
 
         private void MenuItemResetPassword_Click(object sender, RoutedEventArgs e)
         {
@@ -170,15 +198,21 @@ namespace Zenskar_MAMS.Windows
             {
                 try
                 {
-                    var parameters = new SqlParameter[]
-                    {
-                        new("@userId", Convert.ToInt32(row["User_ID"])),
-                        new("@password", "password123")
-                    };
-
-                    string query = "UPDATE User_Table SET Password = @password WHERE User_ID = @userId";
-                    _dbContext.UpdateData(query, parameters);
-
+                    #region OldQuery
+                    //var parameters = new SqlParameter[]
+                    //{
+                    //    new("@userId", Convert.ToInt32(row["User_ID"])),
+                    //    new("@password", "password123")
+                    //};
+                    //string query = "UPDATE User_Table SET Password = @password WHERE User_ID = @userId";
+                    //_dbContext.UpdateData(query, parameters);
+                    #endregion
+                    #region MongoDb
+                    var userId = Convert.ToInt32(row["User_ID"]);
+                    var filter = Builders<UserTable>.Filter.Eq(u => u.User_ID, userId);
+                    var update = Builders<UserTable>.Update.Set(u => u.Password, "password123");
+                    CommonItems._mongoContext.Users.UpdateOne(filter, update);
+                    #endregion
                     MessageBox.Show("Password has been reset successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -199,16 +233,22 @@ namespace Zenskar_MAMS.Windows
             // Check if user has associated students
             try
             {
-                var parameters = new SqlParameter[]
-                {
-                    new("@userName", userName)
-                };
+                #region OldQuery
+                //var parameters = new SqlParameter[]
+                //{
+                //    new("@userName", userName)
+                //};
+                //string checkQuery = userType == "Master"
+                //    ? "SELECT COUNT(*) FROM Student_Data WHERE MasterName = @userName"
+                //    : "SELECT COUNT(*) FROM Student_Data WHERE InstructorName = @userName";
+                //var result = _dbContext.SelectData(checkQuery, parameters);
+                #endregion
+                #region MongoDb
+                var resList = userType == "Master" ? CommonItems._mongoContext.Students.CountDocuments(Builders<StudentTable>.Filter.Eq(s => s.MasterName, userName))
+                : CommonItems._mongoContext.Students.CountDocuments(Builders<StudentTable>.Filter.Eq(s => s.InstructorName, userName));
+                DataTable result = CommonItems.ToDataTableLong(resList);
+                #endregion
 
-                string checkQuery = userType == "Master" 
-                    ? "SELECT COUNT(*) FROM Student_Data WHERE MasterName = @userName"
-                    : "SELECT COUNT(*) FROM Student_Data WHERE InstructorName = @userName";
-
-                var result = _dbContext.SelectData(checkQuery, parameters);
                 int studentCount = Convert.ToInt32(result.Rows[0][0]);
 
                 if (studentCount > 0)
