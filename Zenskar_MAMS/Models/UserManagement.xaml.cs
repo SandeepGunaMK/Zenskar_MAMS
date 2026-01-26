@@ -269,14 +269,27 @@ namespace Zenskar_MAMS.Windows
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 try
-                {
-                    var parameters = new SqlParameter[]
-                    {
-                        new("@userId", Convert.ToInt32(row["User_ID"]))
-                    };
+                { 
+                    #region OldQuery
+                    //var parameters = new SqlParameter[]
+                    //{
+                    //    new("@userId", Convert.ToInt32(row["User_ID"]))
+                    //};
 
-                    string deleteQuery = "DELETE FROM User_Table WHERE User_ID = @userId";
-                    _dbContext.DeleteData(deleteQuery, parameters);
+                    //string deleteQuery = "DELETE FROM User_Table WHERE User_ID = @userId";
+                    //_dbContext.DeleteData(deleteQuery, parameters);
+                    #endregion
+                    #region MongoDb
+                    var userId = Convert.ToInt32(row["User_ID"]);
+                    var filter = Builders<UserTable>.Filter.Eq(u => u.User_ID, userId);
+                    var result = CommonItems._mongoContext.Users.DeleteOne(filter);
+                    #endregion
+
+                    if (result.DeletedCount == 0)
+                    {
+                        MessageBox.Show("User not found.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
 
                     MessageBox.Show("User deleted successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     LoadUsers();
