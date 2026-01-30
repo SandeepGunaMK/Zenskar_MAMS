@@ -11,34 +11,13 @@ using System.Threading.Tasks;
 
 namespace Zenskar_MAMS.Helpers
 {
-    public class MongoDbContext
-    {
-        private readonly IMongoDatabase _database;
 
-        public MongoDbContext(string connectionString, string dbName)
-        {
-            var client = new MongoClient(connectionString);
-            _database = client.GetDatabase(dbName);
-        }
-
-        public IMongoCollection<UserTable> Users =>
-            _database.GetCollection<UserTable>("Users");
-
-        public IMongoCollection<StudentTable> Students =>
-            _database.GetCollection<StudentTable>("Students");
-
-        public IMongoCollection<AttendanceTable> Attendance =>
-            _database.GetCollection<AttendanceTable>("Attendance");
-
-        public IMongoCollection<RequestTable> Requests =>
-            _database.GetCollection<RequestTable>("Requests");
-    }
     public class CommonItems
     {
         public static MongoClientSettings settings = MongoClientSettings.FromConnectionString(ConfigurationManager.ConnectionStrings["MongoDb"].ConnectionString);
         public static MongoClient client = new MongoClient(settings);
         public static IMongoDatabase Db = client.GetDatabase("ZenskarDB");
-        public static MongoDbContext _mongoContext = new MongoDbContext(ConfigurationManager.ConnectionStrings["MongoDb"].ConnectionString, "ZenskarDB");
+        public static MongoDbContext _mongoDBContext = new MongoDbContext(ConfigurationManager.ConnectionStrings["MongoDb"].ConnectionString, "ZenskarDB");
         public static DataTable ToDataTable<T>(List<T> items)
         {
             DataTable dt = new DataTable(typeof(T).Name);
@@ -99,15 +78,36 @@ namespace Zenskar_MAMS.Helpers
 
             return dt;
         }
-
     }
+        public class LoginUser
+        {
+            public int User_ID { get; set; }
+            public string User_Name { get; set; }
+            public string User_Type { get; set; }
+            public string Status { get; set; }
+
+        }
     
-    public class LoginUser
-    {
-        public int User_ID { get; set; }
-        public string User_Name { get; set; }
-        public string User_Type { get; set; }
-        public string Status { get; set; }
+        public class MongoDbContext
+        {
+            private readonly IMongoDatabase _database;
 
+            public MongoDbContext(string connectionString, string dbName)
+            {
+                var client = new MongoClient(connectionString);
+                _database = client.GetDatabase(dbName);
+            }
+
+            public IMongoCollection<UserTable> Users =>
+                _database.GetCollection<UserTable>("Users");
+
+            public IMongoCollection<StudentTable> Students =>
+                _database.GetCollection<StudentTable>("Students");
+
+            public IMongoCollection<AttendanceTable> Attendance =>
+                _database.GetCollection<AttendanceTable>("Attendance");
+
+            public IMongoCollection<RequestTable> Requests =>
+                _database.GetCollection<RequestTable>("Requests");
+        }
     }
-}

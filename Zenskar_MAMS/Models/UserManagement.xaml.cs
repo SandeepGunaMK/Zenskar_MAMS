@@ -89,7 +89,7 @@ namespace Zenskar_MAMS.Windows
                     filter &= filterBuilder.Eq(x => x.Status, status);
                 }
 
-                var result = CommonItems._mongoContext.Users
+                var result = CommonItems._mongoDBContext.Users
                     .Find(filter)
                     .SortByDescending(x => x.Created_Date)
                     .ToList();
@@ -197,7 +197,7 @@ namespace Zenskar_MAMS.Windows
                 var filter = Builders<UserTable>.Filter.Eq(u => u.User_ID, userId);
                 var update = Builders<UserTable>.Update.Set(u => u.Status, newStatus);
 
-                var result = CommonItems._mongoContext.Users.UpdateOne(filter, update);
+                var result = CommonItems._mongoDBContext.Users.UpdateOne(filter, update);
 
                 if (result.MatchedCount == 0)
                 {
@@ -239,7 +239,7 @@ namespace Zenskar_MAMS.Windows
                     var userId = Convert.ToInt32(row["User_ID"]);
                     var filter = Builders<UserTable>.Filter.Eq(u => u.User_ID, userId);
                     var update = Builders<UserTable>.Update.Set(u => u.Password, "password123");
-                    CommonItems._mongoContext.Users.UpdateOne(filter, update);
+                    CommonItems._mongoDBContext.Users.UpdateOne(filter, update);
                     #endregion
                     MessageBox.Show("Password has been reset successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -272,8 +272,8 @@ namespace Zenskar_MAMS.Windows
                 //var result = _dbContext.SelectData(checkQuery, parameters);
                 #endregion
                 #region MongoDb
-                var resList = userType == "Master" ? CommonItems._mongoContext.Students.CountDocuments(Builders<StudentTable>.Filter.Eq(s => s.MasterName, userName))
-                : CommonItems._mongoContext.Students.CountDocuments(Builders<StudentTable>.Filter.Eq(s => s.InstructorName, userName));
+                var resList = userType == "Master" ? CommonItems._mongoDBContext.Students.CountDocuments(Builders<StudentTable>.Filter.Eq(s => s.MasterName, userName))
+                : CommonItems._mongoDBContext.Students.CountDocuments(Builders<StudentTable>.Filter.Eq(s => s.InstructorName, userName));
                 DataTable result = CommonItems.ToDataTableLong(resList);
                 #endregion
 
@@ -310,7 +310,7 @@ namespace Zenskar_MAMS.Windows
                     #region MongoDb
                     var userId = Convert.ToInt32(row["User_ID"]);
                     var filter = Builders<UserTable>.Filter.Eq(u => u.User_ID, userId);
-                    var result = CommonItems._mongoContext.Users.DeleteOne(filter);
+                    var result = CommonItems._mongoDBContext.Users.DeleteOne(filter);
                     #endregion
 
                     if (result.DeletedCount == 0)

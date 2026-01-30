@@ -68,7 +68,7 @@ namespace Zenskar_MAMS.Windows
                 // Get next User_ID
                 int nextUserId = 1;
 
-                var lastUser = CommonItems._mongoContext.Users
+                var lastUser = CommonItems._mongoDBContext.Users
                     .Find(Builders<UserTable>.Filter.Empty)
                     .SortByDescending(u => u.User_ID)
                     .Limit(1)
@@ -93,10 +93,10 @@ namespace Zenskar_MAMS.Windows
                     Approved_Date = null
                 };
 
-                CommonItems._mongoContext.Users.InsertOne(user);
+                CommonItems._mongoDBContext.Users.InsertOne(user);
                 int nextReqId = 1;
 
-                var lastReq = CommonItems._mongoContext.Requests
+                var lastReq = CommonItems._mongoDBContext.Requests
                     .Find(Builders<RequestTable>.Filter.Empty)
                     .SortByDescending(r => r.Request_ID)
                     .Limit(1)
@@ -124,7 +124,7 @@ namespace Zenskar_MAMS.Windows
                     UpdatedData = null
                 };
 
-                CommonItems._mongoContext.Requests.InsertOne(request);
+                CommonItems._mongoDBContext.Requests.InsertOne(request);
                 #endregion
 
 

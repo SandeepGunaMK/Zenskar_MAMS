@@ -1,8 +1,11 @@
+using DocumentFormat.OpenXml.Bibliography;
+using Microsoft.Data.SqlClient;
+using MongoDB.Driver;
 using System;
 using System.Data;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Data.SqlClient;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -44,21 +47,47 @@ namespace Zenskar_MAMS.Windows
         {
             try
             {
-                // Load Instructors
-                var instructorsQuery = "SELECT User_Name FROM User_Table WHERE User_Type = 'Instructor' AND Status = 'Active'";
-                var instructors = _dbContext.SelectData(instructorsQuery);
-                foreach (DataRow row in instructors.Rows)
+                #region OldQuery
+                //Load Instructors
+                //var instructorsQuery = "SELECT User_Name FROM User_Table WHERE User_Type = 'Instructor' AND Status = 'Active'";
+                //var instructors = _dbContext.SelectData(instructorsQuery);
+                //foreach (DataRow row in instructors.Rows)
+                //{
+                //    CmbInstructor.Items.Add(row["User_Name"].ToString());
+                //}
+                #endregion
+                #region MongoDB
+                var filter = Builders<UserTable>.Filter.Eq(x => x.User_Type, "Instructor") & Builders<UserTable>.Filter.Eq(x => x.Status, "Active");
+                var instructorsCol = CommonItems._mongoDBContext.Users
+                    .Find(filter)
+                    .Project(x => new { x.User_Name })
+                    .ToList();
+                foreach (var i in instructorsCol)
                 {
-                    CmbInstructor.Items.Add(row["User_Name"].ToString());
+                    CmbInstructor.Items.Add(i.User_Name.ToString());
                 }
+                #endregion
 
+                #region OldQuery
                 // Load Masters
-                var mastersQuery = "SELECT User_Name FROM User_Table WHERE User_Type = 'Master' AND Status = 'Active'";
-                var masters = _dbContext.SelectData(mastersQuery);
-                foreach (DataRow row in masters.Rows)
+                //var mastersQuery = "SELECT User_Name FROM User_Table WHERE User_Type = 'Master' AND Status = 'Active'";
+                //var masters = _dbContext.SelectData(mastersQuery);
+                //foreach (DataRow row in masters.Rows)
+                //{
+                //    CmbMaster.Items.Add(row["User_Name"].ToString());
+                //}
+                #endregion
+                #region MongoDB
+                var filterMas = Builders<UserTable>.Filter.Eq(x => x.User_Type, "Master") & Builders<UserTable>.Filter.Eq(x => x.Status, "Active");
+                var masterCol = CommonItems._mongoDBContext.Users
+                    .Find(filterMas)
+                    .Project(x => new { x.User_Name })
+                    .ToList();
+                foreach (var i in masterCol)
                 {
-                    CmbMaster.Items.Add(row["User_Name"].ToString());
+                    CmbMaster.Items.Add(i.User_Name.ToString());
                 }
+                #endregion
 
                 // Set default instructor if current user is an instructor
                 if (_currentUserType == "Instructor")
