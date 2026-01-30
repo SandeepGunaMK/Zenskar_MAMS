@@ -76,10 +76,10 @@
                   MouseDoubleClick="UsersGrid_MouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Login ID" 
-                                  Binding="{Binding login_ID}" 
+                                  Binding="{Binding Login_ID}" 
                                   Width="100"/>
                 <DataGridTextColumn Header="Name" 
-                                  Binding="{Binding User_Name}" 
+                                  Binding="{Binding [User_Name]}" 
                                   Width="*"/>
                 <DataGridTextColumn Header="Contact Number" 
                                   Binding="{Binding Contact_Number}" 

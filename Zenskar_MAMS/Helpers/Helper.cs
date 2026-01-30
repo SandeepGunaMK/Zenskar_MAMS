@@ -72,6 +72,34 @@ namespace Zenskar_MAMS.Helpers
             dt.Rows.Add(row);
             return dt;
         }
+        public static DataTable ToDataTable(List<UserTable> users)
+        {
+            var dt = new DataTable();
+
+            dt.Columns.Add("Login_ID");
+            dt.Columns.Add("User_Name");
+            dt.Columns.Add("Contact_Number");
+            dt.Columns.Add("User_Type");
+            dt.Columns.Add("Status");
+            dt.Columns.Add("Created_Date", typeof(DateTime));
+            dt.Columns.Add("Approved_By");
+
+            foreach (var u in users)
+            {
+                dt.Rows.Add(
+                    u.Login_ID,
+                    u.User_Name,
+                    u.Contact_Number,
+                    u.User_Type,
+                    u.Status,
+                    u.Created_Date,
+                    u.Approved_By
+                );
+            }
+
+            return dt;
+        }
+
     }
     
     public class LoginUser

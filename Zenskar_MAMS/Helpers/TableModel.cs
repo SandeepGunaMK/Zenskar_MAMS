@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Zenskar_MAMS.Helpers
     {
         public ObjectId _id { get; set; }
         public int User_ID { get; set; }
-        public string Login_ID { get; set; }
+        public string? Login_ID { get; set; }
         public string User_Name { get; set; }
         public string Contact_Number { get; set; }
         public string Password { get; set; }

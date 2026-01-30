@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Data.SqlClient;
 using MongoDB.Driver;
 using System;
@@ -35,39 +36,66 @@ namespace Zenskar_MAMS.Windows
         }
         private void LoadUsers()
         {
+            #region OldQuery
+            //try
+            //{
+            //    StringBuilder query = new StringBuilder("SELECT * FROM User_Table WHERE User_Type != 'Admin'");
+
+            //    if (CmbUserTypeFilter.SelectedIndex > 0)
+            //    {
+            //        query.Append(" AND User_Type = @userType");
+            //    }
+
+            //    if (CmbStatusFilter.SelectedIndex > 0)
+            //    {
+            //        query.Append(" AND Status = @status");
+            //    }
+
+            //    query.Append(" ORDER BY Created_Date DESC");
+
+            //    var parameters = new List<SqlParameter>();
+
+            //    if (CmbUserTypeFilter.SelectedIndex > 0)
+            //    {
+            //        parameters.Add(new SqlParameter("@userType",
+            //            (CmbUserTypeFilter.SelectedItem as ComboBoxItem).Content.ToString()));
+            //    }
+
+            //    if (CmbStatusFilter.SelectedIndex > 0)
+            //    {
+            //        parameters.Add(new SqlParameter("@status",
+            //            (CmbStatusFilter.SelectedItem as ComboBoxItem).Content.ToString()));
+            //    }
+
+            //    var result = _dbContext.SelectData(query.ToString(), parameters.ToArray());
+            //    UsersGrid.ItemsSource = result.DefaultView;
+            //}
+            #endregion
+            #region MongoDb
             try
             {
-                StringBuilder query = new StringBuilder("SELECT * FROM User_Table WHERE User_Type != 'Admin'");
+                var filterBuilder = Builders<UserTable>.Filter;
+                var filter = filterBuilder.Ne(x => x.User_Type, "Admin");
 
                 if (CmbUserTypeFilter.SelectedIndex > 0)
                 {
-                    query.Append(" AND User_Type = @userType");
+                    var userType = (CmbUserTypeFilter.SelectedItem as ComboBoxItem)?.Content?.ToString();
+                    filter &= filterBuilder.Eq(x => x.User_Type, userType);
                 }
 
                 if (CmbStatusFilter.SelectedIndex > 0)
                 {
-                    query.Append(" AND Status = @status");
+                    var status = (CmbStatusFilter.SelectedItem as ComboBoxItem)?.Content?.ToString();
+                    filter &= filterBuilder.Eq(x => x.Status, status);
                 }
 
-                query.Append(" ORDER BY Created_Date DESC");
-
-                var parameters = new List<SqlParameter>();
-
-                if (CmbUserTypeFilter.SelectedIndex > 0)
-                {
-                    parameters.Add(new SqlParameter("@userType", 
-                        (CmbUserTypeFilter.SelectedItem as ComboBoxItem).Content.ToString()));
-                }
-
-                if (CmbStatusFilter.SelectedIndex > 0)
-                {
-                    parameters.Add(new SqlParameter("@status", 
-                        (CmbStatusFilter.SelectedItem as ComboBoxItem).Content.ToString()));
-                }
-
-                var result = _dbContext.SelectData(query.ToString(), parameters.ToArray());
-                UsersGrid.ItemsSource = result.DefaultView;
+                var result = CommonItems._mongoContext.Users
+                    .Find(filter)
+                    .SortByDescending(x => x.Created_Date)
+                    .ToList();
+                UsersGrid.ItemsSource = CommonItems.ToDataTable(result).DefaultView;
             }
+            #endregion
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading users: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
