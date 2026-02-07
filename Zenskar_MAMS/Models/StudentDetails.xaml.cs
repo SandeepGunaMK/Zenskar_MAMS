@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using MongoDB.Driver;
 using System;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
 using Zenskar_MAMS.Helpers;
@@ -122,14 +123,25 @@ namespace Zenskar_MAMS.Windows
                     }
                     else
                     {
+                        #region OldQuery
                         // Check if instructor owns this student
-                        var query = "SELECT InstructorName FROM Student_Data WHERE Student_ID = @studentId";
-                        var parameters = new SqlParameter[] { new("@studentId", _studentId) };
-                        var result = _dbContext.SelectData(query, parameters);
+                        //var query = "SELECT InstructorName FROM Student_Data WHERE Student_ID = @studentId";
+                        //var parameters = new SqlParameter[] { new("@studentId", _studentId) };
+                        //var result = _dbContext.SelectData(query, parameters);
+                        #endregion
+                        #region MongoDB
+                        var filterStudent = Builders<StudentTable>.Filter.Eq(x => x.Student_ID, _studentId);
+                        var instructors = CommonItems._mongoDBContext.Students
+                            .Find(filterStudent)
+                            .Project(x => new { x.InstructorName }).ToList();
+                        DataTable resultIns = new DataTable();
+                        resultIns = CommonItems.ToDataTable(instructors);
+                        #endregion
 
-                        if (result.Rows.Count > 0)
+
+                        if (resultIns.Rows.Count > 0)
                         {
-                            if (result.Rows[0]["InstructorName"].ToString() == _currentUserName)
+                            if (resultIns.Rows[0]["InstructorName"].ToString() == _currentUserName)
                             {
                                 canEdit = true;
                             }
@@ -169,13 +181,24 @@ namespace Zenskar_MAMS.Windows
         {
             try
             {
-                var parameters = new SqlParameter[] { new("@studentId", _studentId) };
-                string query = "SELECT * FROM Student_Data WHERE Student_ID = @studentId";
-                var result = _dbContext.SelectData(query, parameters);
+                #region OldQuery
+                //var parameters = new SqlParameter[] { new("@studentId", _studentId) };
+                //string query = "SELECT * FROM Student_Data WHERE Student_ID = @studentId";
+                //var result = _dbContext.SelectData(query, parameters);
+                #endregion
+                #region MongoDB
+                var projectionAll = Builders<StudentTable>.Projection.Exclude("_id");
+                var filter = Builders<StudentTable>.Filter.Eq(x => x.Student_ID, _studentId);
+                var studentData = CommonItems._mongoDBContext.Students
+                    .Find(filter)
+                    .Project<StudentTable>(projectionAll).ToList();
+                DataTable resultstudents = new DataTable();
+                resultstudents = CommonItems.ToDataTable(studentData);
+                #endregion
 
-                if (result.Rows.Count > 0)
+                if (resultstudents.Rows.Count > 0)
                 {
-                    var student = result.Rows[0];
+                    var student = resultstudents.Rows[0];
                     TxtName.Text = student["Name"].ToString();
                     DpDOB.SelectedDate = Convert.ToDateTime(student["DOB"]);
                     TxtAge.Text = student["Age"].ToString();
@@ -303,38 +326,99 @@ namespace Zenskar_MAMS.Windows
                     new("@dateOfJoining", DpDateOfJoining.SelectedDate.Value),
                     new("@comments", TxtComments.Text ?? string.Empty)
                 };
+                #region OldQuery
+                //if (_isNewStudent)
+                //{
+                //string insertQuery = @"
+                //    INSERT INTO Student_Data (
+                //        Name, DOB, Age, Gender, Location, Belt, InstructorName, MasterName,
+                //        ContactNumber, ParentsName, MedicalConditions, LastExamDate, Attempts,
+                //        DateOfJoining, Comments, StudentStatus
+                //    )
+                //    VALUES (
+                //        @name, @dob, @age, @gender, @location, @belt, @instructorName, @masterName,
+                //        @contactNumber, @parentsName, @medicalConditions, @lastExamDate, @attempts,
+                //        @dateOfJoining, @comments, 'Active'
+                //    )";
 
+                //_dbContext.InsertData(insertQuery, parameters);
+                #endregion
+                #region MongoDB
                 if (_isNewStudent)
                 {
-                    string insertQuery = @"
-                        INSERT INTO Student_Data (
-                            Name, DOB, Age, Gender, Location, Belt, InstructorName, MasterName,
-                            ContactNumber, ParentsName, MedicalConditions, LastExamDate, Attempts,
-                            DateOfJoining, Comments, StudentStatus
-                        )
-                        VALUES (
-                            @name, @dob, @age, @gender, @location, @belt, @instructorName, @masterName,
-                            @contactNumber, @parentsName, @medicalConditions, @lastExamDate, @attempts,
-                            @dateOfJoining, @comments, 'Active'
-                        )";
+                    var studentDoc = new StudentTable
+                    {
+                        Name = TxtName.Text,
+                        DOB = DpDOB.SelectedDate.Value,
+                        Age = int.Parse(TxtAge.Text),
+                        Gender = CmbGender.Text,
+                        Location = TxtLocation.Text,
+                        Belt = CmbBelt.Text,
+                        InstructorName = CmbInstructor.Text,
+                        MasterName = CmbMaster.Text,
+                        ContactNumber = TxtContactNumber.Text,
+                        ParentsName = TxtParentsName.Text,
+                        MedicalConditions = TxtMedicalConditions.Text ?? string.Empty,
+                        LastExamDate = DpLastExamDate.SelectedDate,
+                        Attempts = string.IsNullOrEmpty(TxtAttempts.Text) ? 0 : int.Parse(TxtAttempts.Text),
+                        DateOfJoining = DpDateOfJoining.SelectedDate.Value,
+                        Comments = TxtComments.Text ?? string.Empty,
+                        StudentStatus = "Active"
+                    };
 
-                    _dbContext.InsertData(insertQuery, parameters);
+                    CommonItems._mongoDBContext.Students.InsertOne(studentDoc);
+                    #endregion
+
                     MessageBox.Show("Student added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    var SelectParameters = new SqlParameter[] {new("@name", TxtName.Text), new("@parentsName", TxtParentsName.Text) };                                
-                    string SelectStudentId = @"Select Student_ID From Student_Data where Name = @name and ParentsName = @parentsName";
-                    var StuDentId = _dbContext.SelectData(SelectStudentId, SelectParameters);
+                    #region OldQuery
+                    //var SelectParameters = new SqlParameter[] {new("@name", TxtName.Text), new("@parentsName", TxtParentsName.Text) };                                
+                    //string SelectStudentId = @"Select Student_ID From Student_Data where Name = @name and ParentsName = @parentsName";
+                    //var StuDentId = _dbContext.SelectData(SelectStudentId, SelectParameters);
+                    #endregion
+                    #region MongoDB
+                    var filterStudent = Builders<StudentTable>.Filter.Eq(x => x.ParentsName, TxtParentsName.Text);
+                    var StuDentId = CommonItems._mongoDBContext.Students
+                        .Find(filterStudent)
+                        .Project(x => new { x.Student_ID }).ToList();
+                    DataTable resultStuDentId = new DataTable();
+                    resultStuDentId = CommonItems.ToDataTable(StuDentId);
+                    int studentId = Convert.ToInt32(resultStuDentId.Rows[0]["Student_ID"]);
+                    #endregion
 
-                    string insertQuery2 = @"
-                        INSERT INTO Attendance ( Student_ID, Name, January, February, March, April, May, June, July, August, September, October, November, December )
-                        VALUES (@StudentId, @name, '00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025')";
+                    #region OldQuery
+                    //   string insertQuery2 = @"
+                    //       INSERT INTO Attendance ( Student_ID, Name, January, February, March, April, May, June, July, August, September, October, November, December )
+                    //       VALUES (@StudentId, @name, '00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025','00-00-2025')";
 
-                    var parameters2 = new SqlParameter[]
-                 {
-                    new("@name", TxtName.Text),new("@StudentId", StuDentId.Rows[0]["Student_ID"])
-                 };
-                    _dbContext.InsertData(insertQuery2, parameters2);
-                    MessageBox.Show("Student added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    //   var parameters2 = new SqlParameter[]
+                    //{
+                    //   new("@name", TxtName.Text),new("@StudentId", StuDentId.Rows[0]["Student_ID"])
+                    //};
+                    //   _dbContext.InsertData(insertQuery2, parameters2);
+                    #endregion
+                    #region MongoDB
+                    var attendanceDoc = new AttendanceTable
+                    {
+                        Student_ID = studentId,
+                        Name = TxtName.Text,
+                        January = "00-00-2025",
+                        February = "00-00-2025",
+                        March = "00-00-2025",
+                        April = "00-00-2025",
+                        May = "00-00-2025",
+                        June = "00-00-2025",
+                        July = "00-00-2025",
+                        August = "00-00-2025",
+                        September = "00-00-2025",
+                        October = "00-00-2025",
+                        November = "00-00-2025",
+                        December = "00-00-2025"
+                    };
+
+                    CommonItems._mongoDBContext.Attendance.InsertOne(attendanceDoc);
+                    #endregion
+                    MessageBox.Show("Student's Attendance added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
 
                 }
