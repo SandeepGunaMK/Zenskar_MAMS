@@ -1,4 +1,7 @@
+using ClosedXML.Excel;
 using Microsoft.Data.SqlClient;
+using Microsoft.Win32;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,8 +17,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 using Zenskar_MAMS.Helpers;
-using ClosedXML.Excel;
-using Microsoft.Win32;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -278,22 +279,53 @@ namespace Zenskar_MAMS.Windows
         private void LoadStudents()
         {
             try
-            {                
-                string condition = "CASE \r\n" +
-                    "WHEN Belt = 'Non-Uniform' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 45 THEN 'Yes'\r\n" +
-                    "WHEN Belt = 'White' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 45 THEN 'Yes'\r\n" +
-                    "WHEN Belt = 'White Senior' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 60 THEN 'Yes'\r\n" +
-                    "WHEN Belt = 'Yellow' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 90 THEN 'Yes'\r\n" +
-                    "ELSE 'No'" +
-                    "END AS 'ExamDue' ";
+            {
+                #region OldQuery
+                //string condition = "CASE \r\n" +
+                //    "WHEN Belt = 'Non-Uniform' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 45 THEN 'Yes'\r\n" +
+                //    "WHEN Belt = 'White' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 45 THEN 'Yes'\r\n" +
+                //    "WHEN Belt = 'White Senior' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 60 THEN 'Yes'\r\n" +
+                //    "WHEN Belt = 'Yellow' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 90 THEN 'Yes'\r\n" +
+                //    "ELSE 'No'" +
+                //    "END AS 'ExamDue' ";
 
-                string query = "SELECT *," + condition + " FROM Student_Data";
+                //string query = "SELECT *," + condition + " FROM Student_Data";
+                //_originalData = _dbContext.SelectData(query);
+                #endregion
+                #region MongoDBQuery
+                var projectionAll = Builders<StudentTable>.Projection.Exclude("_id");
+                var filter = FilterDefinition<StudentTable>.Empty;
+                var studentData = CommonItems._mongoDBContext.Students
+                    .Find(filter)
+                    .Project<StudentTable>(projectionAll).ToList();
+                _originalData = CommonItems.ToDataTable(studentData);
+                _originalData.Columns.Add("ExamDue", typeof(string));
 
+                foreach (DataRow row in _originalData.Rows)
+                {
+                    if (row["LastExamDate"] == DBNull.Value || row["Belt"] == DBNull.Value)
+                    {
+                        row["ExamDue"] = "No";
+                        continue;
+                    }
+                    string belt = row["Belt"].ToString();
+                    DateTime lastExamDate = Convert.ToDateTime(row["LastExamDate"]);
+                    int days = (DateTime.Now - lastExamDate).Days;
+                    bool examDue =
+                                    (belt == "Non-Uniform" && days > 45) ||
+                                    (belt == "White" && days > 45) ||
+                                    (belt == "White Senior" && days > 60) ||
+                                    (belt == "Yellow" && days > 90);
+
+                    row["ExamDue"] = examDue ? "Yes" : "No";
+                }
+                #endregion
                 //var parameters = _userType == "Instructor" 
                 //    ? new SqlParameter[] { new("@userName", _userName) }
                 //    : Array.Empty<SqlParameter>();
 
-                _originalData = _dbContext.SelectData(query);
+
+
                 StudentsGrid.ItemsSource = _originalData.DefaultView;
 
                 // Set alternating row colors
