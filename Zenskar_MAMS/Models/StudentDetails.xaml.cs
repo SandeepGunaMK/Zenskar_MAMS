@@ -1,3 +1,4 @@
+using Azure.Core;
 using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.Data.SqlClient;
 using MongoDB.Bson;
@@ -309,24 +310,7 @@ namespace Zenskar_MAMS.Windows
 
             try
             {
-                var parameters = new SqlParameter[]
-                {
-                    new("@name", TxtName.Text),
-                    new("@dob", DpDOB.SelectedDate.Value),
-                    new("@age", int.Parse(TxtAge.Text)),
-                    new("@gender", CmbGender.Text),
-                    new("@location", TxtLocation.Text),
-                    new("@belt", CmbBelt.Text),
-                    new("@instructorName", CmbInstructor.Text),
-                    new("@masterName", CmbMaster.Text),
-                    new("@contactNumber", TxtContactNumber.Text),
-                    new("@parentsName", TxtParentsName.Text),
-                    new("@medicalConditions", TxtMedicalConditions.Text ?? string.Empty),
-                    new("@lastExamDate", (object)DpLastExamDate.SelectedDate ?? DBNull.Value),
-                    new("@attempts", string.IsNullOrEmpty(TxtAttempts.Text) ? 0 : int.Parse(TxtAttempts.Text)),
-                    new("@dateOfJoining", DpDateOfJoining.SelectedDate.Value),
-                    new("@comments", TxtComments.Text ?? string.Empty)
-                };
+                
                 #region OldQuery
                 //if (_isNewStudent)
                 //{
@@ -433,29 +417,71 @@ namespace Zenskar_MAMS.Windows
                 }
                 else
                 {
-                    var parametersList = parameters.ToList();
-                    parametersList.Add(new SqlParameter("@studentId", _studentId));
+                    #region OldQuery
+                    //    var parameters = new SqlParameter[]
+                    //{
+                    //    new("@name", TxtName.Text),
+                    //    new("@dob", DpDOB.SelectedDate.Value),
+                    //    new("@age", int.Parse(TxtAge.Text)),
+                    //    new("@gender", CmbGender.Text),
+                    //    new("@location", TxtLocation.Text),
+                    //    new("@belt", CmbBelt.Text),
+                    //    new("@instructorName", CmbInstructor.Text),
+                    //    new("@masterName", CmbMaster.Text),
+                    //    new("@contactNumber", TxtContactNumber.Text),
+                    //    new("@parentsName", TxtParentsName.Text),
+                    //    new("@medicalConditions", TxtMedicalConditions.Text ?? string.Empty),
+                    //    new("@lastExamDate", (object)DpLastExamDate.SelectedDate ?? DBNull.Value),
+                    //    new("@attempts", string.IsNullOrEmpty(TxtAttempts.Text) ? 0 : int.Parse(TxtAttempts.Text)),
+                    //    new("@dateOfJoining", DpDateOfJoining.SelectedDate.Value),
+                    //    new("@comments", TxtComments.Text ?? string.Empty)
+                    //};
+                    //    var parametersList = parameters.ToList();
+                    //    parametersList.Add(new SqlParameter("@studentId", _studentId));
 
-                    string updateQuery = @"
-                        UPDATE Student_Data SET
-                            Name = @name,
-                            DOB = @dob,
-                            Age = @age,
-                            Gender = @gender,
-                            Location = @location,
-                            Belt = @belt,
-                            InstructorName = @instructorName,
-                            MasterName = @masterName,
-                            ContactNumber = @contactNumber,
-                            ParentsName = @parentsName,
-                            MedicalConditions = @medicalConditions,
-                            LastExamDate = @lastExamDate,
-                            Attempts = @attempts,
-                            DateOfJoining = @dateOfJoining,
-                            Comments = @comments
-                        WHERE Student_ID = @studentId";
+                    //    string updateQuery = @"
+                    //        UPDATE Student_Data SET
+                    //            Name = @name,
+                    //            DOB = @dob,
+                    //            Age = @age,
+                    //            Gender = @gender,
+                    //            Location = @location,
+                    //            Belt = @belt,
+                    //            InstructorName = @instructorName,
+                    //            MasterName = @masterName,
+                    //            ContactNumber = @contactNumber,
+                    //            ParentsName = @parentsName,
+                    //            MedicalConditions = @medicalConditions,
+                    //            LastExamDate = @lastExamDate,
+                    //            Attempts = @attempts,
+                    //            DateOfJoining = @dateOfJoining,
+                    //            Comments = @comments
+                    //        WHERE Student_ID = @studentId";
 
-                    _dbContext.UpdateData(updateQuery, parametersList.ToArray());
+                    //    _dbContext.UpdateData(updateQuery, parametersList.ToArray());
+                    #endregion
+                    #region MongoDB
+                    var filter = Builders<StudentTable>.Filter.Eq(x => x.Student_ID, _studentId);
+                    var update = Builders<StudentTable>.Update
+                        .Set(x => x.Name, TxtName.Text)
+                        .Set(x => x.DOB, DpDOB.SelectedDate.Value)
+                        .Set(x => x.Age, int.Parse(TxtAge.Text))
+                        .Set(x => x.Gender, CmbGender.Text)
+                        .Set(x => x.Location, TxtLocation.Text)
+                        .Set(x => x.Belt, CmbBelt.Text)
+                        .Set(x => x.InstructorName, CmbInstructor.Text)
+                        .Set(x => x.MasterName, CmbMaster.Text)
+                        .Set(x => x.ContactNumber, TxtContactNumber.Text)
+                        .Set(x => x.ParentsName, TxtParentsName.Text)
+                        .Set(x => x.MedicalConditions, TxtMedicalConditions.Text ?? string.Empty)
+                        .Set(x => x.LastExamDate, (object)DpLastExamDate.SelectedDate ?? DBNull.Value)
+                        .Set(x => x.Attempts, string.IsNullOrEmpty(TxtAttempts.Text) ? 0 : int.Parse(TxtAttempts.Text))
+                        .Set(x => x.DateOfJoining, DpDateOfJoining.SelectedDate.Value)
+                        .Set(x => x.Comments, TxtComments.Text ?? string.Empty);
+
+                    CommonItems._mongoDBContext.Students.UpdateOne(filter, update);
+                    #endregion
+
                     MessageBox.Show("Student updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
@@ -498,34 +524,49 @@ namespace Zenskar_MAMS.Windows
                 // Convert the updated data to JSON
                 string updatedDataJson = System.Text.Json.JsonSerializer.Serialize(updatedData);
 
-                var parameters = new SqlParameter[]
+                #region OldQuery
+                //var parameters = new SqlParameter[]
+                //{
+                //    new("@requestType", "Update"),
+                //    new("@requestedBy", _currentUserName),
+                //    new("@studentId", _studentId),
+                //    new("@requestedDate", DateTime.Now),
+                //    new("@updatedData", updatedDataJson)
+                //};
+                //string query = @"
+                //    INSERT INTO Requests (
+                //        RequestType, 
+                //        RequestedBy, 
+                //        Student_ID, 
+                //        Status, 
+                //        RequestedDate, 
+                //        UpdatedData
+                //    )
+                //    VALUES (
+                //        @requestType, 
+                //        @requestedBy, 
+                //        @studentId, 
+                //        'Open', 
+                //        @requestedDate,
+                //        @updatedData
+                //    )";
+                //_dbContext.InsertData(query, parameters);
+                #endregion
+                #region MongoDB
+                var requestDocument = new RequestTable
                 {
-                    new("@requestType", "Update"),
-                    new("@requestedBy", _currentUserName),
-                    new("@studentId", _studentId),
-                    new("@requestedDate", DateTime.Now),
-                    new("@updatedData", updatedDataJson)
+                    RequestType = "Update",
+                    RequestedBy = _currentUserName,
+                    Student_ID = _studentId,
+                    Status = "Open",
+                    RequestedDate = DateTime.Now,
+                    UpdatedData = updatedDataJson
                 };
 
-                string query = @"
-                    INSERT INTO Requests (
-                        RequestType, 
-                        RequestedBy, 
-                        Student_ID, 
-                        Status, 
-                        RequestedDate, 
-                        UpdatedData
-                    )
-                    VALUES (
-                        @requestType, 
-                        @requestedBy, 
-                        @studentId, 
-                        'Open', 
-                        @requestedDate,
-                        @updatedData
-                    )";
+                // Insert into MongoDB
+                CommonItems._mongoDBContext.Requests.InsertOne(requestDocument);
+                #endregion
 
-                _dbContext.InsertData(query, parameters);
                 MessageBox.Show("Update request submitted successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 DialogResult = true;
                 Close();
