@@ -1,5 +1,6 @@
 using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.Data.SqlClient;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Data;
@@ -346,8 +347,15 @@ namespace Zenskar_MAMS.Windows
                 #region MongoDB
                 if (_isNewStudent)
                 {
+                    var lastStudentId = CommonItems._mongoDBContext.Students.Find(FilterDefinition<StudentTable>.Empty)
+                             .SortByDescending(x => x.Student_ID)
+                             .Limit(1)
+                             .FirstOrDefault();
+                    int nextStudentId = lastStudentId != null ? lastStudentId.Student_ID + 1 : 1;
+
                     var studentDoc = new StudentTable
                     {
+                        Student_ID = nextStudentId,
                         Name = TxtName.Text,
                         DOB = DpDOB.SelectedDate.Value,
                         Age = int.Parse(TxtAge.Text),
@@ -377,13 +385,14 @@ namespace Zenskar_MAMS.Windows
                     //var StuDentId = _dbContext.SelectData(SelectStudentId, SelectParameters);
                     #endregion
                     #region MongoDB
-                    var filterStudent = Builders<StudentTable>.Filter.Eq(x => x.ParentsName, TxtParentsName.Text);
-                    var StuDentId = CommonItems._mongoDBContext.Students
-                        .Find(filterStudent)
-                        .Project(x => new { x.Student_ID }).ToList();
-                    DataTable resultStuDentId = new DataTable();
-                    resultStuDentId = CommonItems.ToDataTable(StuDentId);
-                    int studentId = Convert.ToInt32(resultStuDentId.Rows[0]["Student_ID"]);
+                    //var filterStudent = Builders<StudentTable>.Filter.Eq(x => x.ParentsName, TxtParentsName.Text);
+                    //var StuDentId = CommonItems._mongoDBContext.Students
+                    //    .Find(filterStudent)
+                    //    .Project(x => new { x.Student_ID }).ToList();
+                    //DataTable resultStuDentId = new DataTable();
+                    //resultStuDentId = CommonItems.ToDataTable(StuDentId);
+                    //int studentId = Convert.ToInt32(resultStuDentId.Rows[0]["Student_ID"]);
+                    int studentId = nextStudentId; // Since we already have the next student ID, we can use it directly
                     #endregion
 
                     #region OldQuery
