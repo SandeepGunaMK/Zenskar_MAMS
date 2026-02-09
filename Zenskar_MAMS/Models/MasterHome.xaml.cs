@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using MongoDB.Driver;
 using System.Data;
 using System.Text;
 using System.Windows;
@@ -41,18 +42,69 @@ namespace Zenskar_MAMS.Windows
         {
             try
             {
-                string condition = "CASE \r\n" +
-                    "WHEN Belt = 'White' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 45 THEN 'Yes'\r\n" +
-                    "WHEN Belt = 'White Senior' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 60 THEN 'Yes'\r\n" +
-                    "WHEN Belt = 'Yellow' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 90 THEN 'Yes'\r\n" +
-                    "ELSE 'No'" +
-                    "END AS 'ExamDue' ";
+                #region OldQuery
+                //string condition = "CASE \r\n" +
+                //    "WHEN Belt = 'White' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 45 THEN 'Yes'\r\n" +
+                //    "WHEN Belt = 'White Senior' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 60 THEN 'Yes'\r\n" +
+                //    "WHEN Belt = 'Yellow' \r\n AND DATEDIFF(DAY, LastExamDate, GETDATE()) > 90 THEN 'Yes'\r\n" +
+                //    "ELSE 'No'" +
+                //    "END AS 'ExamDue' ";
 
-                string query = "SELECT Distinct Location,Belt,InstructorName,MasterName, " + condition + " FROM Student_Data" +
-                    " where MasterName = '@master' " +
-                    "AND StudentStatus = 'Active'";
-                var parameter = new SqlParameter[] { new("@master", _userName) };
-                _DBData = _dbContext.SelectData(query, parameter);
+                //string query = "SELECT Distinct Location,Belt,InstructorName,MasterName, " + condition + " FROM Student_Data" +
+                //    " where MasterName = '@master' " +
+                //    "AND StudentStatus = 'Active'";
+                //var parameter = new SqlParameter[] { new("@master", _userName) };
+                //_DBData = _dbContext.SelectData(query, parameter);
+                #endregion
+                #region MongoDb
+                var filter = Builders<StudentTable>.Filter.Eq(x => x.MasterName, _userName) & Builders<StudentTable>.Filter.Eq(x => x.StudentStatus, "Active");
+                var list = CommonItems._mongoDBContext.Students
+                            .Find(filter)
+                            .Project(x => new
+                            {
+                                x.Location,
+                                x.Belt,
+                                x.InstructorName,
+                                x.MasterName,
+                                x.LastExamDate
+                            })
+                            .ToList();
+                var result = list.Select(x =>
+                {
+                    string examDue = "No";
+
+                    if (x.LastExamDate != null && !string.IsNullOrEmpty(x.Belt))
+                    {
+                        int days = (DateTime.Now - x.LastExamDate.Value).Days;
+
+                        bool due =
+                            (x.Belt == "White" && days > 45) ||
+                            (x.Belt == "White Senior" && days > 60) ||
+                            (x.Belt == "Yellow" && days > 90);
+
+                        examDue = due ? "Yes" : "No";
+                    }
+
+                    return new
+                    {
+                        x.Location,
+                        x.Belt,
+                        x.InstructorName,
+                        x.MasterName,
+                        ExamDue = examDue
+                    };
+                })
+                .DistinctBy(x => new
+                {
+                    x.Location,
+                    x.Belt,
+                    x.InstructorName,
+                    x.MasterName,
+                    x.ExamDue
+                }).ToList();
+                _DBData = CommonItems.ToDataTable(result);
+                #endregion
+
                 DataRow[] examDueStudents = _DBData.Select("ExamDue = 'Yes'");
                 DisplayExamDueBatchs(examDueStudents);
             }

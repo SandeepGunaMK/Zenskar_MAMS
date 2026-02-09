@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using Microsoft.Data.SqlClient;
 using Microsoft.Win32;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
@@ -599,40 +601,70 @@ namespace Zenskar_MAMS.Windows
                 {
                     try
                     {
-                        var parameterSelect = new SqlParameter[]
-                        {
-                            new("@studentId", Convert.ToInt32(row["Student_ID"]))
-                        };
-                        var parameters = new SqlParameter[]
-                        {
-                            new("@studentId", Convert.ToInt32(row["Student_ID"]))
-                        };
+                        #region OldQuery
+                        //var parameterSelect = new SqlParameter[]
+                        //{
+                        //    new("@studentId", Convert.ToInt32(row["Student_ID"]))
+                        //};
+                        //var parameters = new SqlParameter[]
+                        //{
+                        //    new("@studentId", Convert.ToInt32(row["Student_ID"]))
+                        //};
 
-                        string query = "SELECT StudentStatus FROM Student_Data WHERE Student_ID = @studentId";
-                        var result = _dbContext.SelectData(query, parameterSelect);
-
-                        string status = result.Rows[0]["StudentStatus"].ToString();
-
-                        if (status == "Active")
+                        //string query;
+                        //string query = "SELECT StudentStatus FROM Student_Data WHERE Student_ID = @studentId";
+                        //var result = _dbContext.SelectData(query, parameterSelect);
+                        //string status = result.Rows[0]["StudentStatus"].ToString();
+                        #endregion
+                        #region MongoDBQuery
+                        var _studentId = Convert.ToInt32(row["Student_ID"]);
+                        var filter = Builders<StudentTable>.Filter.Eq(x => x.Student_ID, _studentId);
+                        var statusCol = CommonItems._mongoDBContext.Students
+                                                .Find(filter)
+                                                .Project(x => new { x.StudentStatus })
+                                                .ToList();
+                        DataTable dtStatus = CommonItems.ToDataTable(statusCol);
+                        string? status = dtStatus.Rows[0]["StudentStatus"].ToString();
+                        #endregion
+                        if (status != null)
                         {
-                            query = "UPDATE Student_Data SET StudentStatus = 'Stopped' WHERE Student_ID = @studentId";
-                            _dbContext.UpdateData(query, parameters);
-                            MessageBox.Show("Student status updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                            if (status == "Active")
+                            {
+                                #region OldQuery
+                                //query = "UPDATE Student_Data SET StudentStatus = 'Stopped' WHERE Student_ID = @studentId";
+                                //_dbContext.UpdateData(query, parameters);
+                                #endregion
+                                #region MongoDBQuery
+                                var filtersts = Builders<StudentTable>.Filter.Eq(x => x.Student_ID, _studentId);
+                                var updatests = Builders<StudentTable>.Update.Set(x => x.StudentStatus, "Stopped");
+                                CommonItems._mongoDBContext.Students.UpdateOne(filtersts, updatests);
+                                #endregion
+                                MessageBox.Show("Student status updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            else if (status == "Stopped")
+                            {
+                                #region OldQuery
+                                //query = "UPDATE Student_Data SET StudentStatus = 'Active' WHERE Student_ID = @studentId";
+                                //_dbContext.UpdateData(query, parameters);
+                                #endregion
+                                #region MongoDBQuery
+                                var filtersts = Builders<StudentTable>.Filter.Eq(x => x.Student_ID, _studentId);
+                                var updatests = Builders<StudentTable>.Update.Set(x => x.StudentStatus, "Active");
+                                CommonItems._mongoDBContext.Students.UpdateOne(filtersts, updatests);
+                                #endregion
+                                MessageBox.Show("Student status updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            else
+                            {
+                                MessageBox.Show("Student status is neither Active nor Stopped. Please Contact Administrator.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
                         }
-                        else if(status == "Stopped")
-                        {
-                            query = "UPDATE Student_Data SET StudentStatus = 'Active' WHERE Student_ID = @studentId";
-                            _dbContext.UpdateData(query, parameters);
-                            MessageBox.Show("Student status updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        else { 
-                            MessageBox.Show("Student status is neither Active nor Stopped. No changes made.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        LoadStudents();
+                        else { MessageBox.Show($"Status is Null, Please Contact Administrator", "Error updating student status", MessageBoxButton.OK, MessageBoxImage.Error); }
+                            LoadStudents();
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error updating student status: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"Error: {ex.Message}", "Error updating student status", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
@@ -657,15 +689,26 @@ namespace Zenskar_MAMS.Windows
                 {
                     try
                     {
-                        var parameters = new SqlParameter[]
-                        {
-                            new("@studentId", Convert.ToInt32(row["Student_ID"]))
-                        };
-
-                        string query = "DELETE FROM Student_Data WHERE Student_ID = @studentId";
-                        _dbContext.DeleteData(query, parameters);
+                        #region OldQuery
+                        //var parameters = new SqlParameter[]
+                        //{
+                        //    new("@studentId", Convert.ToInt32(row["Student_ID"]))
+                        //};
+                        //string query = "DELETE FROM Student_Data WHERE Student_ID = @studentId";
+                        //_dbContext.DeleteData(query, parameters);
+                        #endregion
+                        #region MongoDBQuery
+                        var studentId = Convert.ToInt32(row["Student_ID"]);
+                        var filter = Builders<StudentTable>.Filter.Eq("Student_ID", studentId);
+                        CommonItems._mongoDBContext.Students.DeleteOne(filter);
+                        #endregion
                         LoadStudents();
-                        MessageBox.Show("Student deleted successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show("Student Removed from Inventory", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        #region MongoDBQuery
+                        var filterAttend = Builders<AttendanceTable>.Filter.Eq("Student_ID", studentId);
+                        CommonItems._mongoDBContext.Attendance.DeleteOne(filterAttend);
+                        #endregion
+                        MessageBox.Show("Student Attendance Removed from Inventory", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     catch (Exception ex)
                     {
