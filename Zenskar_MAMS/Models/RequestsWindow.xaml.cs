@@ -1,4 +1,6 @@
+using Azure.Core;
 using Microsoft.Data.SqlClient;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -151,6 +153,96 @@ namespace Zenskar_MAMS.Windows
                 var result = _dbContext.SelectData(query.ToString(), parameters.ToArray());
                 RequestsGrid.ItemsSource = result.DefaultView;
             }
+            //try
+            //{
+            //    var projection = Builders<RequestTable>.Projection.Exclude("_id");
+
+            //    var filterBuilder = Builders<RequestTable>.Filter;
+            //    var filters = new List<FilterDefinition<RequestTable>>();
+
+            //    // ----------------------
+            //    // Status filters
+            //    // ----------------------
+            //    var statusFilters = new List<string>();
+            //    if (ChkOpen.IsChecked == true) statusFilters.Add("Open");
+            //    if (ChkApproved.IsChecked == true) statusFilters.Add("Approved");
+            //    if (ChkRejected.IsChecked == true) statusFilters.Add("Rejected");
+
+            //    if (statusFilters.Count > 0)
+            //        filters.Add(filterBuilder.In(x => x.Status, statusFilters));
+
+            //    // ----------------------
+            //    // Type filters
+            //    // ----------------------
+            //    var typeFilters = new List<string>();
+            //    if (ChkRegistration.IsChecked == true) typeFilters.Add("Registration");
+            //    if (ChkUpdate.IsChecked == true) typeFilters.Add("Update");
+            //    if (ChkDelete.IsChecked == true) typeFilters.Add("Delete");
+
+            //    if (typeFilters.Count > 0)
+            //        filters.Add(filterBuilder.In(x => x.RequestType, typeFilters));
+
+            //    // ----------------------
+            //    // Role-based filters
+            //    // ----------------------
+            //    if (_currentUserType != "Admin")
+            //    {
+            //        if (_currentUserType == "Master")
+            //        {
+            //            var masterFilter = filterBuilder.Or(
+            //                filterBuilder.Eq(x => x.RequestType, "Update"),
+            //                filterBuilder.Eq(x => x.RequestedBy, _currentUserName)
+            //            );
+
+            //            filters.Add(masterFilter);
+            //        }
+            //        else // Instructor
+            //        {
+            //            filters.Add(filterBuilder.Eq(x => x.RequestedBy, _currentUserName));
+            //        }
+            //    }
+
+            //    var finalFilter = filters.Count > 0
+            //        ? filterBuilder.And(filters)
+            //        : FilterDefinition<RequestTable>.Empty;
+
+            //    var requestData = CommonItems._mongoDBContext.Requests
+            //                        .Find(finalFilter)
+            //                        .Project<RequestTable>(projection)
+            //                        .SortByDescending(x => x.RequestedDate)
+            //                        .ToList();
+
+            // ----------------------
+            // LEFT JOIN + CASE logic
+            // ----------------------
+            //var studentIds = requestData
+            //                    .Where(x => x.Student_ID != null)
+            //                    .Select(x => x.Student_ID)
+            //                    .Distinct()
+            //                    .ToList();
+
+            //var studentProjection = Builders<StudentTable>.Projection.Exclude("_id");
+            //var studentFilter = Builders<StudentTable>.Filter.In(x => x.Student_ID, studentIds);
+
+            //var studentData = CommonItems._mongoDBContext.Students
+            //                    .Find(studentFilter)
+            //                    .Project<StudentTable>(studentProjection)
+            //                    .ToList();
+
+            //var studentDictionary = studentData
+            //                            .ToDictionary(x => x.Student_ID, x => x.Name);
+
+            //// Apply CASE logic equivalent
+            //var finalResult = requestData.Select(r => new
+            //{
+            //    r,
+            //    StudentName = r.Student_ID != null && studentDictionary.ContainsKey(r.Student_ID)
+            //                    ? studentDictionary[r.Student_ID]
+            //                    : null
+            //}).ToList();
+            //var finalResult = CommonItems.ToDataTable(requestData);
+            //    RequestsGrid.ItemsSource = requestData;
+            //}
             catch (Exception ex)
             {
                 //MessageBox.Show($"Error loading requests: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -193,26 +285,51 @@ namespace Zenskar_MAMS.Windows
         {
             try
             {
-                var parameters = new SqlParameter[]
-                {
-                    new("@userName", request["RequestedBy"].ToString())
-                };
+                #region OldQuery
+                //var parameters = new SqlParameter[]
+                //{
+                //    new("@userName", request["RequestedBy"].ToString())
+                //};
 
-                string query = "SELECT * FROM User_Table WHERE User_Name = @userName";
-                var result = _dbContext.SelectData(query, parameters);
+                //string query = "SELECT * FROM User_Table WHERE User_Name = @userName";
+                //var result = _dbContext.SelectData(query, parameters);
 
-                if (result.Rows.Count > 0)
+                //if (result.Rows.Count > 0)
+                //{
+                //    var details = result.Rows[0];
+                //    string message = $"Registration Details:\n\n" +
+                //                   $"Name: {details["User_Name"]}\n" +
+                //                   $"Login ID: {details["login_ID"]}\n" +
+                //                   $"Contact: {details["Contact_Number"]}\n" +
+                //                   $"User Type: {details["User_Type"]}\n" +
+                //                   $"Created Date: {details["Created_Date"]}";
+
+                //    MessageBox.Show(message, "Registration Details", MessageBoxButton.OK, MessageBoxImage.Information);
+                //}
+                #endregion
+                #region MongoDBQuery
+                var userName = request["RequestedBy"]?.ToString();
+                var projection = Builders<UserTable>.Projection.Exclude("_id");
+                var filter = Builders<UserTable>.Filter.Eq(x => x.User_Name, userName);
+                var userData = CommonItems._mongoDBContext.Users
+                                .Find(filter)
+                                .Project<UserTable>(projection)
+                                .ToList();
+
+                if (userData.Count > 0)
                 {
-                    var details = result.Rows[0];
+                    var details = userData[0];
                     string message = $"Registration Details:\n\n" +
-                                   $"Name: {details["User_Name"]}\n" +
-                                   $"Login ID: {details["login_ID"]}\n" +
-                                   $"Contact: {details["Contact_Number"]}\n" +
-                                   $"User Type: {details["User_Type"]}\n" +
-                                   $"Created Date: {details["Created_Date"]}";
+                                     $"Name: {details.User_Name}\n" +
+                                     $"Login ID: {details.Login_ID}\n" +
+                                     $"Contact: {details.Contact_Number}\n" +
+                                     $"User Type: {details.User_Type}\n" +
+                                     $"Created Date: {details.Created_Date}";
 
-                    MessageBox.Show(message, "Registration Details", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(message, "Registration Details",MessageBoxButton.OK, MessageBoxImage.Information);
+
                 }
+                #endregion
             }
             catch (Exception ex)
             {
@@ -233,9 +350,21 @@ namespace Zenskar_MAMS.Windows
                     {
                         // Get current student data
                         var studentId = Convert.ToInt32(row["Student_ID"]);
+
+                        #region OldQuery                        
                         var parameters = new SqlParameter[] { new("@studentId", studentId) };
                         string query = "SELECT * FROM Student_Data WHERE Student_ID = @studentId";
                         var result = _dbContext.SelectData(query, parameters);
+                        #endregion
+                        #region MongoDBQuery
+                        var projection = Builders<StudentTable>.Projection.Exclude("_id");
+                        var filter = Builders<StudentTable>.Filter.Eq(x => x.Student_ID, studentId);
+                        var resultMongo = CommonItems._mongoDBContext.Students
+                                        .Find(filter)
+                                        .Project<StudentTable>(projection)
+                                        .ToList();
+                        var result123 = CommonItems.ToDataTable(resultMongo);
+                        #endregion
 
                         if (result.Rows.Count > 0)
                         {
@@ -373,40 +502,60 @@ namespace Zenskar_MAMS.Windows
             }
 
             // Update request status
-            var parameters = new SqlParameter[]
-            {
-                new("@requestId", requestId),
-                new("@approvedBy", _currentUserName),
-                new("@approvedDate", DateTime.Now)
-            };
+            #region OldQuery   
+            //var parameters = new SqlParameter[]
+            //{
+            //    new("@requestId", requestId),
+            //    new("@approvedBy", _currentUserName),
+            //    new("@approvedDate", DateTime.Now)
+            //};
 
-            string updateQuery = @"
-                UPDATE Requests 
-                SET Status = 'Approved',
-                    ApprovedBy = @approvedBy,
-                    ApprovedDate = @approvedDate
-                WHERE Request_ID = @requestId";
+            //string updateQuery = @"
+            //    UPDATE Requests 
+            //    SET Status = 'Approved',
+            //        ApprovedBy = @approvedBy,
+            //        ApprovedDate = @approvedDate
+            //    WHERE Request_ID = @requestId";
 
-            _dbContext.UpdateData(updateQuery, parameters);
+            //_dbContext.UpdateData(updateQuery, parameters);
+            #endregion
+            #region MongoDBQuery
+            var filter = Builders<RequestTable>.Filter.Eq(x => x.Request_ID, requestId);
+            var update = Builders<RequestTable>.Update
+                .Set(x => x.Status, "Approved")
+                .Set(x => x.ApprovedBy, _currentUserName)
+                .Set(x => x.ApprovedDate, DateTime.Now);
+            CommonItems._mongoDBContext.Requests.UpdateOne(filter, update);
+            #endregion
         }
 
         private void ApproveRegistration(string userName)
         {
-            var parameters = new SqlParameter[]
-            {
-                new("@userName", userName),
-                new("@approvedBy", _currentUserName),
-                new("@approvedDate", DateTime.Now)
-            };
+            #region OldQuery            
+            //var parameters = new SqlParameter[]
+            //{
+            //    new("@userName", userName),
+            //    new("@approvedBy", _currentUserName),
+            //    new("@approvedDate", DateTime.Now)
+            //};
 
-            string query = @"
-                UPDATE User_Table 
-                SET Status = 'Active',
-                    Approved_By = @approvedBy,
-                    Approved_Date = @approvedDate
-                WHERE User_Name = @userName";
+            //string query = @"
+            //    UPDATE User_Table 
+            //    SET Status = 'Active',
+            //        Approved_By = @approvedBy,
+            //        Approved_Date = @approvedDate
+            //    WHERE User_Name = @userName";
 
-            _dbContext.UpdateData(query, parameters);
+            //_dbContext.UpdateData(query, parameters);
+            #endregion
+            #region MongoDBQuery
+            var filter = Builders<UserTable>.Filter.Eq(x => x.User_Name, userName);
+            var update = Builders<UserTable>.Update
+                .Set(x => x.Status, "Active")
+                .Set(x => x.Approved_By, _currentUserName)
+                .Set(x => x.Approved_Date, DateTime.Now);
+            CommonItems._mongoDBContext.Users.UpdateOne(filter, update);
+            #endregion
         }
 
         private void UpdateStudent(int studentId, Dictionary<string, object> updatedData)
