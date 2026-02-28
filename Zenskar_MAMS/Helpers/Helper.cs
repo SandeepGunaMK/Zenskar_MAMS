@@ -107,7 +107,12 @@ namespace Zenskar_MAMS.Helpers
             public IMongoCollection<AttendanceTable> Attendance =>
                 _database.GetCollection<AttendanceTable>("Attendance");
 
+            public IMongoCollection<LocationTable> Locations =>
+                _database.GetCollection<LocationTable>("Locations");
+
+            public IMongoCollection<BeltTable> Belts =>
+                _database.GetCollection<BeltTable>("Belts");
             public IMongoCollection<RequestTable> Requests =>
                 _database.GetCollection<RequestTable>("Requests");
-        }
+    }
     }

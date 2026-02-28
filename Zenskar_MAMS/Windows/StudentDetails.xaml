@@ -89,15 +89,27 @@
                 </ComboBox>
 
                 <!-- Location -->
-                <TextBlock Grid.Row="4" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                <!--<TextBlock Grid.Row="4" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
                          Text="Location:" 
                          Margin="5"/>
                 <TextBox Grid.Row="4" Grid.Column="1" 
                         x:Name="TxtLocation"
-                        Margin="5"/>
-
+                        Margin="5"/>-->
+                <TextBlock Grid.Row="4" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Location:" 
+                         Margin="5"/>
+                <ComboBox Grid.Row="4" Grid.Column="1" 
+                         x:Name="CmbLocation"
+                         Margin="5"
+                         SelectionChanged="AddLocation"/>
                 <!-- Belt -->
                 <TextBlock Grid.Row="5" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
+                         Text="Belt:" 
+                         Margin="5"/>
+                <ComboBox Grid.Row="5" Grid.Column="1" 
+                         x:Name="CmbBelt"
+                         Margin="5"/>
+                <!--<TextBlock Grid.Row="5" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"
                          Text="Belt:" 
                          Margin="5"/>
                 <ComboBox Grid.Row="5" Grid.Column="1" 
@@ -116,7 +128,7 @@
                     <ComboBoxItem Content="Brown 1"/>
                     <ComboBoxItem Content="Brown 2"/>
                     <ComboBoxItem Content="Black"/>
-                </ComboBox>
+                </ComboBox>-->
 
                 <!-- Instructor -->
                 <TextBlock Grid.Row="6" Grid.Column="0" Foreground="{StaticResource TextPrimaryBrush}"

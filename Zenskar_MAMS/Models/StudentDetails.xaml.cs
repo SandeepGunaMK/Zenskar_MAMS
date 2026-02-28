@@ -1,7 +1,9 @@
 using Azure.Core;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Data.SqlClient;
+using Microsoft.VisualBasic;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
@@ -31,6 +33,7 @@ namespace Zenskar_MAMS.Windows
             _isNewStudent = studentId == 0;
 
             LoadInstructorsAndMasters();
+            LoadLocationAndBelt();
             ConfigurePermissions();
             
             if (!_isNewStudent)
@@ -46,7 +49,62 @@ namespace Zenskar_MAMS.Windows
             // Add event handler for DOB change
             DpDOB.SelectedDateChanged += DpDOB_SelectedDateChanged;
         }
+        private void AddLocation(object sender, SelectionChangedEventArgs e)
+        {
+            string selected = null;
+            if (e.AddedItems != null && e.AddedItems.Count > 0)
+                selected = e.AddedItems[0]?.ToString();
+            if (string.IsNullOrEmpty(selected))
+                selected = CmbLocation.Text;
+            if (selected == "Add New Location")
+            {
+                string newLocation = Interaction.InputBox("Enter the new Location:", "Input Required");
+                if (!string.IsNullOrWhiteSpace(newLocation))
+                {
+                    var loc = new LocationTable
+                    {
+                        Location = newLocation
+                    };
+                    CommonItems._mongoDBContext.Locations.InsertOne(loc);
 
+                    // Add to combobox and select the newly added item
+                    if (!CmbLocation.Items.Contains(newLocation))
+                        CmbLocation.Items.Add(newLocation);
+                    CmbLocation.SelectedItem = newLocation;
+                }
+                else
+                {
+                    // If user cancelled or entered empty value, reset selection if needed
+                    CmbLocation.SelectedIndex = -1;
+                }
+            }
+        }
+        private void LoadLocationAndBelt()
+        {
+            var filterB = Builders<BeltTable>.Filter.Empty;
+            var projectionB = Builders<BeltTable>.Projection.Exclude("_id");
+            var beltsB = CommonItems._mongoDBContext.Belts
+                .Find(filterB)
+                .Project<BeltTable>(projectionB)
+                .ToList();
+            foreach (var i in beltsB)
+            {
+                CmbBelt.Items.Add(i.Belt.ToString());
+            }
+
+            var filterL = Builders<LocationTable>.Filter.Empty;
+            var projectionL = Builders<LocationTable>.Projection.Exclude("_id");
+            var locations = CommonItems._mongoDBContext.Locations
+                .Find(filterL)
+                .Project<LocationTable>(projectionL)
+                .SortBy(x=>x.Location)
+                .ToList();
+            CmbLocation.Items.Add("Add New Location");
+            foreach (var i in locations)
+            {
+                CmbLocation.Items.Add(i.Location.ToString());
+            }
+        }
         private void LoadInstructorsAndMasters()
         {
             try
@@ -170,7 +228,7 @@ namespace Zenskar_MAMS.Windows
             {
                 foreach (var element in new FrameworkElement[] 
                 { 
-                    TxtName, DpDOB, CmbGender, TxtLocation, CmbBelt, CmbInstructor, CmbMaster,
+                    TxtName, DpDOB, CmbGender, CmbLocation, CmbBelt, CmbInstructor, CmbMaster,
                     TxtContactNumber, TxtParentsName, TxtMedicalConditions, DpLastExamDate,
                     TxtAttempts, DpDateOfJoining, TxtComments 
                 })
@@ -206,7 +264,7 @@ namespace Zenskar_MAMS.Windows
                     DpDOB.SelectedDate = Convert.ToDateTime(student["DOB"]);
                     TxtAge.Text = student["Age"].ToString();
                     CmbGender.Text = student["Gender"].ToString();
-                    TxtLocation.Text = student["Location"].ToString();
+                    CmbLocation.Text = student["Location"].ToString();
                     CmbBelt.Text = student["Belt"].ToString();
                     CmbInstructor.Text = student["InstructorName"].ToString();
                     CmbMaster.Text = student["MasterName"].ToString();
@@ -259,7 +317,7 @@ namespace Zenskar_MAMS.Windows
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(TxtLocation.Text))
+            if (string.IsNullOrWhiteSpace(CmbLocation.Text))
             {
                 MessageBox.Show("Please enter the location.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
@@ -345,7 +403,7 @@ namespace Zenskar_MAMS.Windows
                         DOB = DpDOB.SelectedDate.Value,
                         Age = int.Parse(TxtAge.Text),
                         Gender = CmbGender.Text,
-                        Location = TxtLocation.Text,
+                        Location = CmbLocation.Text,
                         Belt = CmbBelt.Text,
                         InstructorName = CmbInstructor.Text,
                         MasterName = CmbMaster.Text,
@@ -468,7 +526,7 @@ namespace Zenskar_MAMS.Windows
                         .Set(x => x.DOB, DpDOB.SelectedDate.Value)
                         .Set(x => x.Age, int.Parse(TxtAge.Text))
                         .Set(x => x.Gender, CmbGender.Text)
-                        .Set(x => x.Location, TxtLocation.Text)
+                        .Set(x => x.Location, CmbLocation.Text)
                         .Set(x => x.Belt, CmbBelt.Text)
                         .Set(x => x.InstructorName, CmbInstructor.Text)
                         .Set(x => x.MasterName, CmbMaster.Text)
@@ -509,7 +567,7 @@ namespace Zenskar_MAMS.Windows
                     DOB = DpDOB.SelectedDate.Value,
                     Age = int.Parse(TxtAge.Text),
                     Gender = CmbGender.Text,
-                    Location = TxtLocation.Text,
+                    Location = CmbLocation.Text,
                     Belt = CmbBelt.Text,
                     InstructorName = CmbInstructor.Text,
                     MasterName = CmbMaster.Text,

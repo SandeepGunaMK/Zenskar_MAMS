@@ -601,9 +601,11 @@ namespace Zenskar_MAMS.Windows
                 .Set(x => x.Approved_By, _currentUserName)
                 .Set(x => x.Approved_Date, DateTime.Now);
             CommonItems._mongoDBContext.Users.UpdateOne(filter, update);
+            LoadRequests();
             #endregion
         }
 
+        #region OldQuery
         /*
         private void UpdateStudent(int studentId, Dictionary<string, object> updatedData)
         {
@@ -661,7 +663,8 @@ namespace Zenskar_MAMS.Windows
             }
         }
         */
-
+        #endregion
+        #region MongoDB
         private void UpdateStudent(int studentId, Dictionary<string, object> updatedData)
         {
             try
@@ -701,10 +704,75 @@ namespace Zenskar_MAMS.Windows
                                 value = BsonNull.Value;
                                 break;
                             case JsonValueKind.Object:
+                                // Handle MongoDB extended JSON date wrapper: { "$date": "..." } or { "$date": { "$numberLong": "..." } }
+                                if (element.TryGetProperty("$date", out var dateProp))
+                                {
+                                    // dateProp can be string or object
+                                    if (dateProp.ValueKind == JsonValueKind.String)
+                                    {
+                                        var ds = dateProp.GetString();
+                                        if (DateTime.TryParse(ds, out var dd))
+                                            value = dd;
+                                        else
+                                            value = ds;
+                                    }
+                                    else if (dateProp.ValueKind == JsonValueKind.Number)
+                                    {
+                                        if (dateProp.TryGetInt64(out var ms))
+                                        {
+                                            // treat as milliseconds since epoch
+                                            try
+                                            {
+                                                var epoch = DateTimeOffset.FromUnixTimeMilliseconds(ms).UtcDateTime;
+                                                value = epoch;
+                                            }
+                                            catch
+                                            {
+                                                value = ms;
+                                            }
+                                        }
+                                    }
+                                    else if (dateProp.ValueKind == JsonValueKind.Object && dateProp.TryGetProperty("$numberLong", out var numLong))
+                                    {
+                                        var numStr = numLong.GetString();
+                                        if (long.TryParse(numStr, out var numVal))
+                                        {
+                                            try
+                                            {
+                                                var epoch = DateTimeOffset.FromUnixTimeMilliseconds(numVal).UtcDateTime;
+                                                value = epoch;
+                                            }
+                                            catch
+                                            {
+                                                value = numVal;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // fallback to raw
+                                        value = element.GetRawText();
+                                    }
+                                }
+                                else
+                                {
+                                    // Not a $date wrapper - store as BsonDocument if possible
+                                    try
+                                    {
+                                        value = BsonDocument.Parse(element.GetRawText());
+                                    }
+                                    catch
+                                    {
+                                        value = element.GetRawText();
+                                    }
+                                }
+                                break;
                             case JsonValueKind.Array:
+                                // store arrays as BsonArray
                                 try
                                 {
-                                    value = BsonDocument.Parse(element.GetRawText());
+                                    var doc = BsonDocument.Parse(element.GetRawText());
+                                    value = doc;
                                 }
                                 catch
                                 {
@@ -720,7 +788,25 @@ namespace Zenskar_MAMS.Windows
                     if (value == DBNull.Value)
                         value = BsonNull.Value;
 
-                    BsonValue bsonVal = value is BsonValue bv ? bv : BsonValue.Create(value);
+                    // Ensure DateTime values become BSON Date types
+                    BsonValue bsonVal;
+                    if (value is DateTime dtVal)
+                    {
+                        bsonVal = new BsonDateTime(dtVal);
+                    }
+                    else if (value is DateTimeOffset dtoVal)
+                    {
+                        bsonVal = new BsonDateTime(dtoVal.UtcDateTime);
+                    }
+                    else if (value is BsonValue bv)
+                    {
+                        bsonVal = bv;
+                    }
+                    else
+                    {
+                        bsonVal = BsonValue.Create(value);
+                    }
+
                     updateDefs.Add(updater.Set(kvp.Key, bsonVal));
                 }
 
@@ -736,7 +822,7 @@ namespace Zenskar_MAMS.Windows
                 throw new Exception($"Error updating student data: {ex.Message}");
             }
         }
-
+        #endregion
         private void DeleteStudent(int studentId)
         {
             #region OldQuery

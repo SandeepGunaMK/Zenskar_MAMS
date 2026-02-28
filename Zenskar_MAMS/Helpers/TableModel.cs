@@ -93,4 +93,13 @@ namespace Zenskar_MAMS.Helpers
         public string UpdatedData { get; set; }
     }
 
+    public class LocationTable
+    {
+        public string Location { get; set; }
+    }
+    public class BeltTable
+    {
+        public string Belt { get; set; }
+    }
+
 }
