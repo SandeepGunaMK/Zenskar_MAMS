@@ -26,7 +26,7 @@ namespace Zenskar_MAMS.Helpers
     public class StudentTable
     {
         public ObjectId _id { get; set; }
-        public int Student_ID { get; set; }
+        public int? Student_ID { get; set; }
         public string Name { get; set; }
         public DateTime? DOB { get; set; }
         public int Age { get; set; }
@@ -48,7 +48,7 @@ namespace Zenskar_MAMS.Helpers
     public class AttendanceTable
     {
         public ObjectId _id { get; set; }
-        public int Student_ID { get; set; }
+        public int? Student_ID { get; set; }
         public string Name { get; set; }
         public string January { get; set; }
         public string February { get; set; }
@@ -70,13 +70,27 @@ namespace Zenskar_MAMS.Helpers
         public int Request_ID { get; set; }
         public string RequestType { get; set; }
         public string RequestedBy { get; set; }
-        public int Student_ID { get; set; }
+        public int? Student_ID { get; set; }
         public string Status { get; set; }
         public string? RejectedReason { get; set; }
         public DateTime? RequestedDate { get; set; }
         public string? ApprovedBy { get; set; }
         public DateTime? ApprovedDate { get; set; }
-        public string? UpdatedData { get; set; }
+        public BsonValue? UpdatedData { get; set; }
+    }
+    public class RequestGridModel
+    {
+        public int Request_ID { get; set; }
+        public string RequestType { get; set; }
+        public string RequestedBy { get; set; }
+        public string StudentName { get; set; }
+        public int? Student_ID { get; set; }
+        public string Status { get; set; }
+        public string RejectedReason { get; set; }
+        public DateTime? RequestedDate { get; set; }
+        public string ApprovedBy { get; set; }
+        public DateTime? ApprovedDate { get; set; }
+        public string UpdatedData { get; set; }
     }
 
 }

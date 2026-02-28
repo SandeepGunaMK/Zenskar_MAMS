@@ -1,8 +1,10 @@
 using Azure.Core;
 using Microsoft.Data.SqlClient;
 using MongoDB.Driver;
+using System.Linq;
 using System;
 using System.Collections.Generic;
+using MongoDB.Bson;
 using System.Data;
 using System.Text;
 using System.Text.Json;
@@ -91,158 +93,187 @@ namespace Zenskar_MAMS.Windows
 
         private void LoadRequests()
         {
-            try
-            {
-                StringBuilder query = new StringBuilder(@"
-                    SELECT R.*, 
-                           CASE 
-                               WHEN R.Student_ID IS NOT NULL THEN S.Name 
-                               ELSE NULL 
-                           END AS StudentName
-                    FROM Requests R
-                    LEFT JOIN Student_Data S ON R.Student_ID = S.Student_ID
-                    WHERE 1=1");
-
-                var conditions = new List<string>();
-                var parameters = new List<SqlParameter>();
-
-                // Status filters
-                var statusFilters = new List<string>();
-                if (ChkOpen.IsChecked == true) statusFilters.Add("'Open'");
-                if (ChkApproved.IsChecked == true) statusFilters.Add("'Approved'");
-                if (ChkRejected.IsChecked == true) statusFilters.Add("'Rejected'");
-
-                if (statusFilters.Count > 0)
-                {
-                    conditions.Add($"R.Status IN ({string.Join(",", statusFilters)})");
-                }
-
-                // Type filters
-                var typeFilters = new List<string>();
-                if (ChkRegistration.IsChecked == true) typeFilters.Add("'Registration'");
-                if (ChkUpdate.IsChecked == true) typeFilters.Add("'Update'");
-                if (ChkDelete.IsChecked == true) typeFilters.Add("'Delete'");
-
-                if (typeFilters.Count > 0)
-                {
-                    conditions.Add($"R.RequestType IN ({string.Join(",", typeFilters)})");
-                }
-
-                // For non-admin users, show only relevant requests
-                if (_currentUserType != "Admin")
-                {
-                    if (_currentUserType == "Master")
-                    {
-                        conditions.Add("(R.RequestType = 'Update' OR R.RequestedBy = @userName)");
-                        parameters.Add(new SqlParameter("@userName", _currentUserName));
-                    }
-                    else // Instructor
-                    {
-                        conditions.Add("R.RequestedBy = @userName");
-                        parameters.Add(new SqlParameter("@userName", _currentUserName));
-                    }
-                }
-
-                if (conditions.Count > 0)
-                {
-                    query.Append(" AND ").Append(string.Join(" AND ", conditions));
-                }
-
-                query.Append(" ORDER BY R.RequestedDate DESC");
-
-                var result = _dbContext.SelectData(query.ToString(), parameters.ToArray());
-                RequestsGrid.ItemsSource = result.DefaultView;
-            }
+            #region OldQuery
             //try
             //{
-            //    var projection = Builders<RequestTable>.Projection.Exclude("_id");
+            //    StringBuilder query = new StringBuilder(@"
+            //        SELECT R.*, 
+            //               CASE 
+            //                   WHEN R.Student_ID IS NOT NULL THEN S.Name 
+            //                   ELSE NULL 
+            //               END AS StudentName
+            //        FROM Requests R
+            //        LEFT JOIN Student_Data S ON R.Student_ID = S.Student_ID
+            //        WHERE 1=1");
 
-            //    var filterBuilder = Builders<RequestTable>.Filter;
-            //    var filters = new List<FilterDefinition<RequestTable>>();
+            //    var conditions = new List<string>();
+            //    var parameters = new List<SqlParameter>();
 
-            //    // ----------------------
             //    // Status filters
-            //    // ----------------------
             //    var statusFilters = new List<string>();
-            //    if (ChkOpen.IsChecked == true) statusFilters.Add("Open");
-            //    if (ChkApproved.IsChecked == true) statusFilters.Add("Approved");
-            //    if (ChkRejected.IsChecked == true) statusFilters.Add("Rejected");
+            //    if (ChkOpen.IsChecked == true) statusFilters.Add("'Open'");
+            //    if (ChkApproved.IsChecked == true) statusFilters.Add("'Approved'");
+            //    if (ChkRejected.IsChecked == true) statusFilters.Add("'Rejected'");
 
             //    if (statusFilters.Count > 0)
-            //        filters.Add(filterBuilder.In(x => x.Status, statusFilters));
+            //    {
+            //        conditions.Add($"R.Status IN ({string.Join(",", statusFilters)})");
+            //    }
 
-            //    // ----------------------
             //    // Type filters
-            //    // ----------------------
             //    var typeFilters = new List<string>();
-            //    if (ChkRegistration.IsChecked == true) typeFilters.Add("Registration");
-            //    if (ChkUpdate.IsChecked == true) typeFilters.Add("Update");
-            //    if (ChkDelete.IsChecked == true) typeFilters.Add("Delete");
+            //    if (ChkRegistration.IsChecked == true) typeFilters.Add("'Registration'");
+            //    if (ChkUpdate.IsChecked == true) typeFilters.Add("'Update'");
+            //    if (ChkDelete.IsChecked == true) typeFilters.Add("'Delete'");
 
             //    if (typeFilters.Count > 0)
-            //        filters.Add(filterBuilder.In(x => x.RequestType, typeFilters));
+            //    {
+            //        conditions.Add($"R.RequestType IN ({string.Join(",", typeFilters)})");
+            //    }
 
-            //    // ----------------------
-            //    // Role-based filters
-            //    // ----------------------
+            //    // For non-admin users, show only relevant requests
             //    if (_currentUserType != "Admin")
             //    {
             //        if (_currentUserType == "Master")
             //        {
-            //            var masterFilter = filterBuilder.Or(
-            //                filterBuilder.Eq(x => x.RequestType, "Update"),
-            //                filterBuilder.Eq(x => x.RequestedBy, _currentUserName)
-            //            );
-
-            //            filters.Add(masterFilter);
+            //            conditions.Add("(R.RequestType = 'Update' OR R.RequestedBy = @userName)");
+            //            parameters.Add(new SqlParameter("@userName", _currentUserName));
             //        }
             //        else // Instructor
             //        {
-            //            filters.Add(filterBuilder.Eq(x => x.RequestedBy, _currentUserName));
+            //            conditions.Add("R.RequestedBy = @userName");
+            //            parameters.Add(new SqlParameter("@userName", _currentUserName));
             //        }
             //    }
 
-            //    var finalFilter = filters.Count > 0
-            //        ? filterBuilder.And(filters)
-            //        : FilterDefinition<RequestTable>.Empty;
+            //    if (conditions.Count > 0)
+            //    {
+            //        query.Append(" AND ").Append(string.Join(" AND ", conditions));
+            //    }
 
-            //    var requestData = CommonItems._mongoDBContext.Requests
-            //                        .Find(finalFilter)
-            //                        .Project<RequestTable>(projection)
-            //                        .SortByDescending(x => x.RequestedDate)
-            //                        .ToList();
+            //    query.Append(" ORDER BY R.RequestedDate DESC");
 
-            // ----------------------
-            // LEFT JOIN + CASE logic
-            // ----------------------
-            //var studentIds = requestData
-            //                    .Where(x => x.Student_ID != null)
-            //                    .Select(x => x.Student_ID)
-            //                    .Distinct()
-            //                    .ToList();
-
-            //var studentProjection = Builders<StudentTable>.Projection.Exclude("_id");
-            //var studentFilter = Builders<StudentTable>.Filter.In(x => x.Student_ID, studentIds);
-
-            //var studentData = CommonItems._mongoDBContext.Students
-            //                    .Find(studentFilter)
-            //                    .Project<StudentTable>(studentProjection)
-            //                    .ToList();
-
-            //var studentDictionary = studentData
-            //                            .ToDictionary(x => x.Student_ID, x => x.Name);
-
-            //// Apply CASE logic equivalent
-            //var finalResult = requestData.Select(r => new
-            //{
-            //    r,
-            //    StudentName = r.Student_ID != null && studentDictionary.ContainsKey(r.Student_ID)
-            //                    ? studentDictionary[r.Student_ID]
-            //                    : null
-            //}).ToList();
-            //var finalResult = CommonItems.ToDataTable(requestData);
-            //    RequestsGrid.ItemsSource = requestData;
+            //    var result = _dbContext.SelectData(query.ToString(), parameters.ToArray());
+            //    RequestsGrid.ItemsSource = result.DefaultView;
             //}
+            #endregion
+            #region MongoDB
+            try
+            {
+                var filterBuilder = Builders<RequestTable>.Filter;
+                var filters = new List<FilterDefinition<RequestTable>>();
+
+                // ----------------------
+                // Status filters
+                // ----------------------
+                var statusFilters = new List<string>();
+                if (ChkOpen.IsChecked == true) statusFilters.Add("Open");
+                if (ChkApproved.IsChecked == true) statusFilters.Add("Approved");
+                if (ChkRejected.IsChecked == true) statusFilters.Add("Rejected");
+
+                if (statusFilters.Count > 0)
+                    filters.Add(filterBuilder.In(x => x.Status, statusFilters));
+
+                // ----------------------
+                // Type filters
+                // ----------------------
+                var typeFilters = new List<string>();
+                if (ChkRegistration.IsChecked == true) typeFilters.Add("Registration");
+                if (ChkUpdate.IsChecked == true) typeFilters.Add("Update");
+                if (ChkDelete.IsChecked == true) typeFilters.Add("Delete");
+
+                if (typeFilters.Count > 0)
+                    filters.Add(filterBuilder.In(x => x.RequestType, typeFilters));
+
+                // ----------------------
+                // Role-based filters
+                // ----------------------
+                if (_currentUserType != "Admin")
+                {
+                    if (_currentUserType == "Master")
+                    {
+                        var masterFilter = filterBuilder.Or(
+                            filterBuilder.Eq(x => x.RequestType, "Update"),
+                            filterBuilder.Eq(x => x.RequestedBy, _currentUserName)
+                        );
+
+                        filters.Add(masterFilter);
+                    }
+                    else // Instructor
+                    {
+                        filters.Add(filterBuilder.Eq(x => x.RequestedBy, _currentUserName));
+                    }
+                }
+
+                var finalFilter = filters.Count > 0
+                    ? filterBuilder.And(filters)
+                    : FilterDefinition<RequestTable>.Empty;
+
+                // Fetch full RequestTable documents so UpdatedData can be inspected as BsonValue
+                var requestData = CommonItems._mongoDBContext.Requests
+                                    .Find(finalFilter)
+                                    .SortByDescending(x => x.RequestedDate)
+                                    .ToList();
+
+                //----------------------
+                //LEFT JOIN + CASE logic
+                //----------------------
+                var studentIds = requestData
+                                    .Where(x => x.Student_ID.HasValue)
+                                    .Select(x => x.Student_ID)
+                                    .Distinct()
+                                    .ToList(); // List<int?>
+
+                var studentProjection = Builders<StudentTable>.Projection.Exclude("_id");
+                var studentFilter = Builders<StudentTable>.Filter.In(x => x.Student_ID, studentIds);
+
+                var studentData = CommonItems._mongoDBContext.Students
+                                    .Find(studentFilter)
+                                    .Project<StudentTable>(studentProjection)
+                                    .ToList();
+
+                var studentDictionary = studentData
+                                            .Where(x => x.Student_ID.HasValue)
+                                            .ToDictionary(x => x.Student_ID!.Value, x => x.Name);
+
+                // Apply CASE logic equivalent and project a flat object matching the DataGrid bindings
+                //var finalResult = requestData.Select(r => new
+                //{
+                //    r.Request_ID,
+                //    r.RequestType,
+                //    r.RequestedBy,
+                //    StudentName = (r.Student_ID.HasValue && studentDictionary.ContainsKey(r.Student_ID.Value))
+                //                    ? studentDictionary[r.Student_ID.Value]
+                //                    : null,
+                //    Student_ID = r.Student_ID,
+                //    r.Status,
+                //    r.RejectedReason,
+                //    r.RequestedDate,
+                //    r.ApprovedBy,
+                //    r.ApprovedDate,
+                //    // Convert UpdatedData (BsonValue) to a JSON string if it's a document/array, otherwise ToString()
+                //    UpdatedData = r.UpdatedData == null ? null : (r.UpdatedData.IsBsonDocument || r.UpdatedData.IsBsonArray ? r.UpdatedData.ToJson() : r.UpdatedData.ToString())
+                //}).ToList();
+                var finalResult = requestData.Select(r => new RequestGridModel
+                {
+                    Request_ID = r.Request_ID,
+                    RequestType = r.RequestType,
+                    RequestedBy = r.RequestedBy,
+                    StudentName = (r.Student_ID.HasValue && studentDictionary.ContainsKey(r.Student_ID.Value))
+                                    ? studentDictionary[r.Student_ID.Value]
+                                    : null,
+                    Student_ID = r.Student_ID,
+                    Status = r.Status,
+                    RejectedReason = r.RejectedReason,
+                    RequestedDate = r.RequestedDate,
+                    ApprovedBy = r.ApprovedBy,
+                    ApprovedDate = r.ApprovedDate,
+                    UpdatedData = r.UpdatedData?.ToJson()
+                }).ToList();
+
+                RequestsGrid.ItemsSource = finalResult;
+            }
+            #endregion
             catch (Exception ex)
             {
                 //MessageBox.Show($"Error loading requests: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -266,14 +297,16 @@ namespace Zenskar_MAMS.Windows
 
         private void ViewRequestDetails()
         {
-            if (RequestsGrid.SelectedItem is DataRowView row)
+            if (RequestsGrid.SelectedItem is RequestGridModel row)
             {
-                string requestType = row["RequestType"].ToString();
+                //string requestType = row.RequestType.ToString();
+                string requestType = row.RequestType.ToString();
                 if (requestType == "Registration")
                 {
                     ShowRegistrationDetails(row);
                 }
-                else if (int.TryParse(row["Student_ID"]?.ToString(), out int studentId))
+                //else if (int.TryParse(row.Student_ID?.ToString(), out int studentId))
+                else if (int.TryParse(row.Student_ID?.ToString(), out int studentId))
                 {
                     var studentDetails = new StudentDetails(studentId, _currentUserType, _currentUserName);
                     studentDetails.ShowDialog();
@@ -281,7 +314,7 @@ namespace Zenskar_MAMS.Windows
             }
         }
 
-        private void ShowRegistrationDetails(DataRowView request)
+        private void ShowRegistrationDetails(RequestGridModel request)
         {
             try
             {
@@ -308,7 +341,8 @@ namespace Zenskar_MAMS.Windows
                 //}
                 #endregion
                 #region MongoDBQuery
-                var userName = request["RequestedBy"]?.ToString();
+                //var userName = request["RequestedBy"]?.ToString();
+                var userName = request.RequestedBy?.ToString();
                 var projection = Builders<UserTable>.Projection.Exclude("_id");
                 var filter = Builders<UserTable>.Filter.Eq(x => x.User_Name, userName);
                 var userData = CommonItems._mongoDBContext.Users
@@ -342,19 +376,19 @@ namespace Zenskar_MAMS.Windows
             if (!CanApproveRequest())
                 return;
 
-            if (RequestsGrid.SelectedItem is DataRowView row)
+            if (RequestsGrid.SelectedItem is RequestGridModel row)
             {
                 try
                 {
-                    if (row["RequestType"].ToString() == "Update")
+                    if (row.RequestType.ToString() == "Update")
                     {
                         // Get current student data
-                        var studentId = Convert.ToInt32(row["Student_ID"]);
+                        var studentId = Convert.ToInt32(row.Student_ID);
 
                         #region OldQuery                        
-                        var parameters = new SqlParameter[] { new("@studentId", studentId) };
-                        string query = "SELECT * FROM Student_Data WHERE Student_ID = @studentId";
-                        var result = _dbContext.SelectData(query, parameters);
+                        //var parameters = new SqlParameter[] { new("@studentId", studentId) };
+                        //string query = "SELECT * FROM Student_Data WHERE Student_ID = @studentId";
+                        //var result = _dbContext.SelectData(query, parameters);
                         #endregion
                         #region MongoDBQuery
                         var projection = Builders<StudentTable>.Projection.Exclude("_id");
@@ -363,7 +397,7 @@ namespace Zenskar_MAMS.Windows
                                         .Find(filter)
                                         .Project<StudentTable>(projection)
                                         .ToList();
-                        var result123 = CommonItems.ToDataTable(resultMongo);
+                        var result = CommonItems.ToDataTable(resultMongo);
                         #endregion
 
                         if (result.Rows.Count > 0)
@@ -377,7 +411,7 @@ namespace Zenskar_MAMS.Windows
                             // Show comparison window
                             var detailsWindow = new RequestDetailsWindow(
                                 currentValues,
-                                row["UpdatedData"].ToString(),
+                                row.UpdatedData.ToString(),
                                 () => ProcessApproval(row),
                                 () => ShowRejectDialog(row)
                             );
@@ -404,30 +438,41 @@ namespace Zenskar_MAMS.Windows
         {
             LoadRequests();
         }       
-        private void ShowRejectDialog(DataRowView row)
+        private void ShowRejectDialog(RequestGridModel row)
         {
             var reasonWindow = new RejectReasonWindow();
             if (reasonWindow.ShowDialog() == true)
             {
                 try
                 {
-                    var parameters = new SqlParameter[]
-                    {
-                        new("@requestId", Convert.ToInt32(row["Request_ID"])),
-                        new("@rejectedReason", reasonWindow.Reason),
-                        new("@approvedBy", _currentUserName),
-                        new("@approvedDate", DateTime.Now)
-                    };
+                    #region OldQuery
+                    //var parameters = new SqlParameter[]
+                    //{
+                    //    new("@requestId", Convert.ToInt32(row.Request_ID)),
+                    //    new("@rejectedReason", reasonWindow.Reason),
+                    //    new("@approvedBy", _currentUserName),
+                    //    new("@approvedDate", DateTime.Now)
+                    //};
 
-                    string query = @"
-                        UPDATE Requests 
-                        SET Status = 'Rejected',
-                            RejectedReason = @rejectedReason,
-                            ApprovedBy = @approvedBy,
-                            ApprovedDate = @approvedDate
-                        WHERE Request_ID = @requestId";
+                    //string query = @"
+                    //    UPDATE Requests 
+                    //    SET Status = 'Rejected',
+                    //        RejectedReason = @rejectedReason,
+                    //        ApprovedBy = @approvedBy,
+                    //        ApprovedDate = @approvedDate
+                    //    WHERE Request_ID = @requestId";
 
-                    _dbContext.UpdateData(query, parameters);
+                    //_dbContext.UpdateData(query, parameters);
+                    #endregion
+                    #region MongoDB
+                    var filter = Builders<RequestTable>.Filter.Eq(x => x.Request_ID, Convert.ToInt32(row.Request_ID));
+                    var update = Builders<RequestTable>.Update
+                                .Set(x => x.Status, "Rejected")
+                                .Set(x => x.RejectedReason, reasonWindow.Reason)
+                                .Set(x => x.ApprovedBy, _currentUserName)
+                                .Set(x => x.ApprovedDate, DateTime.Now);
+                    CommonItems._mongoDBContext.Requests.UpdateOne(filter, update);
+                    #endregion
                     LoadRequests();
                 }
                 catch (Exception ex)
@@ -440,14 +485,14 @@ namespace Zenskar_MAMS.Windows
 
         private bool CanApproveRequest()
         {
-            if (RequestsGrid.SelectedItem is not DataRowView row)
+            if (RequestsGrid.SelectedItem is not RequestGridModel row)
             {
                 MessageBox.Show("Please select a request to approve.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
-            string requestType = row["RequestType"].ToString();
-            string status = row["Status"].ToString();
+            string requestType = row.RequestType.ToString();
+            string status = row.Status.ToString();
 
             if (status != "Open")
             {
@@ -464,20 +509,20 @@ namespace Zenskar_MAMS.Windows
             return true;
         }
 
-        private void ProcessApproval(DataRowView row)
+        private void ProcessApproval(RequestGridModel row)
         {
-            string requestType = row["RequestType"].ToString();
-            int requestId = Convert.ToInt32(row["Request_ID"]);
+            string requestType = row.RequestType.ToString();
+            int requestId = Convert.ToInt32(row.Request_ID);
 
             switch (requestType)
             {
                 case "Registration":
-                    ApproveRegistration(row["RequestedBy"].ToString());
+                    ApproveRegistration(row.RequestedBy.ToString());
                     break;
                 case "Update":
-                    if (int.TryParse(row["Student_ID"]?.ToString(), out int studentId))
+                    if (int.TryParse(row.Student_ID?.ToString(), out int studentId))
                     {
-                        string updatedDataJson = row["UpdatedData"]?.ToString();
+                        string updatedDataJson = row.UpdatedData?.ToString();
                         if (!string.IsNullOrEmpty(updatedDataJson))
                         {
                             try
@@ -494,7 +539,7 @@ namespace Zenskar_MAMS.Windows
                     }
                     break;
                 case "Delete":
-                    if (int.TryParse(row["Student_ID"]?.ToString(), out studentId))
+                    if (int.TryParse(row.Student_ID?.ToString(), out studentId))
                     {
                         DeleteStudent(studentId);
                     }
@@ -597,6 +642,7 @@ namespace Zenskar_MAMS.Windows
                 parameters.Add(new SqlParameter(paramName, value ?? DBNull.Value));
                 updateParts.Add($"{kvp.Key} = {paramName}");
             }
+            //TobeChanged
 
             string updateQuery = $@"
                 UPDATE Student_Data 
@@ -615,13 +661,18 @@ namespace Zenskar_MAMS.Windows
 
         private void DeleteStudent(int studentId)
         {
-            var parameters = new SqlParameter[]
-            {
-                new("@studentId", studentId)
-            };
-
-            string query = "DELETE FROM Student_Data WHERE Student_ID = @studentId";
-            _dbContext.DeleteData(query, parameters);
+            #region OldQuery
+            //var parameters = new SqlParameter[]
+            //{
+            //    new("@studentId", studentId)
+            //};
+            //string query = "DELETE FROM Student_Data WHERE Student_ID = @studentId";
+            //_dbContext.DeleteData(query, parameters);
+            #endregion
+            #region MongoDB
+            var filter = Builders<StudentTable>.Filter.Eq(x => x.Student_ID, studentId);
+            CommonItems._mongoDBContext.Students.DeleteOne(filter);
+            #endregion
         }
 
         private void MenuItemReject_Click(object sender, RoutedEventArgs e)
@@ -629,30 +680,39 @@ namespace Zenskar_MAMS.Windows
             if (!CanRejectRequest())
                 return;
 
-            if (RequestsGrid.SelectedItem is DataRowView row)
+            if (RequestsGrid.SelectedItem is RequestGridModel row)
             {
                 var reasonWindow = new RejectReasonWindow();
                 if (reasonWindow.ShowDialog() == true)
                 {
                     try
                     {
-                        var parameters = new SqlParameter[]
-                        {
-                            new("@requestId", Convert.ToInt32(row["Request_ID"])),
-                            new("@rejectedReason", reasonWindow.Reason),
-                            new("@approvedBy", _currentUserName),
-                            new("@approvedDate", DateTime.Now)
-                        };
-
-                        string query = @"
-                            UPDATE Requests 
-                            SET Status = 'Rejected',
-                                RejectedReason = @rejectedReason,
-                                ApprovedBy = @approvedBy,
-                                ApprovedDate = @approvedDate
-                            WHERE Request_ID = @requestId";
-
-                        _dbContext.UpdateData(query, parameters);
+                        #region oldQuery
+                        //var parameters = new SqlParameter[]
+                        //{
+                        //    new("@requestId", Convert.ToInt32(row.Request_ID)),
+                        //    new("@rejectedReason", reasonWindow.Reason),
+                        //    new("@approvedBy", _currentUserName),
+                        //    new("@approvedDate", DateTime.Now)
+                        //};
+                        //string query = @"
+                        //    UPDATE Requests 
+                        //    SET Status = 'Rejected',
+                        //        RejectedReason = @rejectedReason,
+                        //        ApprovedBy = @approvedBy,
+                        //        ApprovedDate = @approvedDate
+                        //    WHERE Request_ID = @requestId";
+                        //_dbContext.UpdateData(query, parameters);
+                        #endregion
+                        #region MongoDB
+                        var filter = Builders<RequestTable>.Filter.Eq(x=>x.Request_ID, Convert.ToInt32(row.Request_ID));
+                        var update = Builders<RequestTable>.Update
+                                    .Set(x => x.Status, "Rejected")
+                                    .Set(x => x.RejectedReason, reasonWindow.Reason)
+                                    .Set(x => x.ApprovedBy, _currentUserName)
+                                    .Set(x => x.ApprovedDate, DateTime.Now);
+                        CommonItems._mongoDBContext.Requests.UpdateOne(filter, update);
+                        #endregion
                         LoadRequests();
                     }
                     catch (Exception ex)
@@ -665,14 +725,14 @@ namespace Zenskar_MAMS.Windows
 
         private bool CanRejectRequest()
         {
-            if (RequestsGrid.SelectedItem is not DataRowView row)
+            if (RequestsGrid.SelectedItem is not RequestGridModel row)
             {
                 MessageBox.Show("Please select a request to reject.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
-            string requestType = row["RequestType"].ToString();
-            string status = row["Status"].ToString();
+            string requestType = row.RequestType.ToString();
+            string status = row.Status.ToString();
 
             if (status != "Open")
             {

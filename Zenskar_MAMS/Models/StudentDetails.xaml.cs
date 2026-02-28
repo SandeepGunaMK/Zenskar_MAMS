@@ -1,5 +1,6 @@
 using Azure.Core;
 using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing;
 using Microsoft.Data.SqlClient;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -335,7 +336,7 @@ namespace Zenskar_MAMS.Windows
                              .SortByDescending(x => x.Student_ID)
                              .Limit(1)
                              .FirstOrDefault();
-                    int nextStudentId = lastStudentId != null ? lastStudentId.Student_ID + 1 : 1;
+                    int nextStudentId = lastStudentId != null && lastStudentId.Student_ID.HasValue ? lastStudentId.Student_ID.Value + 1 : 1;
 
                     var studentDoc = new StudentTable
                     {
@@ -523,7 +524,7 @@ namespace Zenskar_MAMS.Windows
 
                 // Convert the updated data to JSON
                 string updatedDataJson = System.Text.Json.JsonSerializer.Serialize(updatedData);
-
+                var bsonDocument = updatedData.ToBsonDocument();
                 #region OldQuery
                 //var parameters = new SqlParameter[]
                 //{
@@ -553,14 +554,23 @@ namespace Zenskar_MAMS.Windows
                 //_dbContext.InsertData(query, parameters);
                 #endregion
                 #region MongoDB
+                var filter = Builders<RequestTable>.Filter.Empty;
+                var lastReqId = CommonItems._mongoDBContext.Requests
+                                    .Find(filter)
+                                    .SortByDescending(x => x.Request_ID)
+                                    .Limit(1)
+                                    .FirstOrDefault();
+                int ReqId = lastReqId?.Request_ID ?? 0;
                 var requestDocument = new RequestTable
                 {
+                    Request_ID = ReqId + 1,
                     RequestType = "Update",
                     RequestedBy = _currentUserName,
                     Student_ID = _studentId,
                     Status = "Open",
                     RequestedDate = DateTime.Now,
-                    UpdatedData = updatedDataJson
+                    //UpdatedData = updatedDataJson
+                    UpdatedData = bsonDocument,
                 };
 
                 // Insert into MongoDB
