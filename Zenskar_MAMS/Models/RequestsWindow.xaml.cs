@@ -571,6 +571,7 @@ namespace Zenskar_MAMS.Windows
                 .Set(x => x.ApprovedBy, _currentUserName)
                 .Set(x => x.ApprovedDate, DateTime.Now);
             CommonItems._mongoDBContext.Requests.UpdateOne(filter, update);
+            LoadRequests();
             #endregion
         }
 
@@ -603,6 +604,7 @@ namespace Zenskar_MAMS.Windows
             #endregion
         }
 
+        /*
         private void UpdateStudent(int studentId, Dictionary<string, object> updatedData)
         {
             var parameters = new List<SqlParameter>
@@ -652,6 +654,82 @@ namespace Zenskar_MAMS.Windows
             try
             {
                 _dbContext.UpdateData(updateQuery, parameters.ToArray());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating student data: {ex.Message}");
+            }
+        }
+        */
+
+        private void UpdateStudent(int studentId, Dictionary<string, object> updatedData)
+        {
+            try
+            {
+                var updater = Builders<StudentTable>.Update;
+                var updateDefs = new List<UpdateDefinition<StudentTable>>();
+
+                foreach (var kvp in updatedData)
+                {
+                    object? value = kvp.Value;
+
+                    if (value is JsonElement element)
+                    {
+                        switch (element.ValueKind)
+                        {
+                            case JsonValueKind.String:
+                                var s = element.GetString();
+                                // Try parse as datetime, otherwise keep string
+                                if (DateTime.TryParse(s, out var dt))
+                                    value = dt;
+                                else
+                                    value = s;
+                                break;
+                            case JsonValueKind.Number:
+                                if (element.TryGetInt32(out var i))
+                                    value = i;
+                                else if (element.TryGetInt64(out var l))
+                                    value = l;
+                                else if (element.TryGetDouble(out var d))
+                                    value = d;
+                                break;
+                            case JsonValueKind.True:
+                            case JsonValueKind.False:
+                                value = element.GetBoolean();
+                                break;
+                            case JsonValueKind.Null:
+                                value = BsonNull.Value;
+                                break;
+                            case JsonValueKind.Object:
+                            case JsonValueKind.Array:
+                                try
+                                {
+                                    value = BsonDocument.Parse(element.GetRawText());
+                                }
+                                catch
+                                {
+                                    value = element.GetRawText();
+                                }
+                                break;
+                            default:
+                                value = element.GetRawText();
+                                break;
+                        }
+                    }
+
+                    if (value == DBNull.Value)
+                        value = BsonNull.Value;
+
+                    BsonValue bsonVal = value is BsonValue bv ? bv : BsonValue.Create(value);
+                    updateDefs.Add(updater.Set(kvp.Key, bsonVal));
+                }
+
+                if (updateDefs.Count > 0)
+                {
+                    var filter = Builders<StudentTable>.Filter.Eq(x => x.Student_ID, studentId);
+                    var combined = updater.Combine(updateDefs);
+                    CommonItems._mongoDBContext.Students.UpdateOne(filter, combined);
+                }
             }
             catch (Exception ex)
             {
