@@ -236,8 +236,8 @@ namespace Zenskar_MAMS.Windows
                     //_dbContext.UpdateData(query, parameters);
                     #endregion
                     #region MongoDb
-                    var userId = Convert.ToInt32(row["User_ID"]);
-                    var filter = Builders<UserTable>.Filter.Eq(u => u.User_ID, userId);
+                    var login_Id = row["Login_ID"];
+                    var filter = Builders<UserTable>.Filter.Eq(u => u.Login_ID, login_Id);
                     var update = Builders<UserTable>.Update.Set(u => u.Password, "password123");
                     CommonItems._mongoDBContext.Users.UpdateOne(filter, update);
                     #endregion
