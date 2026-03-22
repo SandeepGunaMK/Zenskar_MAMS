@@ -29,7 +29,7 @@ namespace Zenskar_MAMS.Windows
     }
     public partial class StudentsList : Window
     {
-        private readonly DBContext _dbContext;
+        //private readonly DBContext _dbContext;
         private readonly string _userType;
         private readonly string _userName;
         private DataTable _originalData;
@@ -170,7 +170,7 @@ namespace Zenskar_MAMS.Windows
         {
             InitializeComponent();
             DataContext = this;
-            _dbContext = new DBContext();
+            //_dbContext = new DBContext();
             _userType = userType;
             _userName = userName;
             _columnFilters = new Dictionary<string, HashSet<string>>();

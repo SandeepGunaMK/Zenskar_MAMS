@@ -17,7 +17,7 @@ namespace Zenskar_MAMS.Windows
 {
     public partial class RequestsWindow : Window
     {
-        private readonly DBContext _dbContext;
+        //private readonly DBContext _dbContext;
         private readonly string _currentUserType;
         private readonly string _currentUserName;
         private static readonly RoutedCommand ApproveCommand = new RoutedCommand();
@@ -25,7 +25,7 @@ namespace Zenskar_MAMS.Windows
         public RequestsWindow(string userType, string userName)
         {
             InitializeComponent();
-            _dbContext = new DBContext();
+            //_dbContext = new DBContext();
             _currentUserType = userType;
             _currentUserName = userName;
 

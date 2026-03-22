@@ -12,12 +12,12 @@ namespace Zenskar_MAMS.Windows
 {
     public partial class UserManagement : Window
     {
-        private readonly DBContext _dbContext;
+        //private readonly DBContext _dbContext;
 
         public UserManagement()
         {
             InitializeComponent();
-            _dbContext = new DBContext();
+            //_dbContext = new DBContext();
 
             CmbUserTypeFilter.SelectedIndex = 0;
             CmbStatusFilter.SelectedIndex = 0;

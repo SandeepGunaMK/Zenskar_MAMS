@@ -13,12 +13,12 @@ namespace Zenskar_MAMS.Windows
 {
     public partial class Register : Window
     {
-        private readonly DBContext _dbContext;        
+        //private readonly DBContext _dbContext;        
 
         public Register()
         {
             InitializeComponent();
-            _dbContext = new DBContext();
+            //_dbContext = new DBContext();
         }
 
         private void BtnRegister_Click(object sender, RoutedEventArgs e)

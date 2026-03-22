@@ -10,13 +10,13 @@ namespace Zenskar_MAMS.Windows
     public partial class MasterHome : Window
     {
         private readonly string _userName;
-        private readonly DBContext _dbContext;
+        //private readonly DBContext _dbContext;
         private readonly string _userType;
         private DataTable _DBData;
 
         public MasterHome(string userName)
         {
-            _dbContext = new DBContext();
+            //_dbContext = new DBContext();
             InitializeComponent();
             _userName = userName;
             LoadExamDueBatchs();

@@ -10,14 +10,14 @@ namespace Zenskar_MAMS.Windows
 {
     public partial class Login : Window
     {
-        private readonly DBContext _dbContext;
+        //private readonly DBContext _dbContext;
 
         public Login()
         {
             try
             {
                 InitializeComponent();
-                _dbContext = new DBContext();
+                //_dbContext = new DBContext();
             }
             catch (Exception ex)
             {

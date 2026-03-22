@@ -17,7 +17,7 @@ namespace Zenskar_MAMS.Windows
 {
     public partial class StudentDetails : Window
     {
-        private readonly DBContext _dbContext;
+        //private readonly DBContext _dbContext;
         private readonly int _studentId;
         private readonly string _currentUserType;
         private readonly string _currentUserName;
@@ -26,7 +26,7 @@ namespace Zenskar_MAMS.Windows
         public StudentDetails(int studentId, string userType, string userName)
         {
             InitializeComponent();
-            _dbContext = new DBContext();
+            //_dbContext = new DBContext();
             _studentId = studentId;
             _currentUserType = userType;
             _currentUserName = userName;

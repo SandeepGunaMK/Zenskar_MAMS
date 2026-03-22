@@ -10,7 +10,7 @@ namespace Zenskar_MAMS.Windows
     public partial class AdminHome : Window
     {
         private readonly string _userName;
-        private readonly DBContext _dbContext;
+        //private readonly DBContext _dbContext;
         private readonly string _userType;
         private DataTable _DBData;
 
@@ -25,7 +25,7 @@ namespace Zenskar_MAMS.Windows
         public AdminHome(string userName = "Admin")
         {
             DataContext = this;
-            _dbContext = new DBContext();
+            //_dbContext = new DBContext();
             InitializeComponent();
             _userName = userName;
             LoadExamDueBatchs();
