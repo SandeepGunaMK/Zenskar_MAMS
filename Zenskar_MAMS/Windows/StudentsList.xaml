@@ -54,6 +54,11 @@
                     Click="ClearFilters_BtnClick"
                     Margin="650,-40,20,10"
                     Style="{StaticResource ModernButtonStyle}" Width="100"/>
+            <Button x:Name="UpdateInstructor"
+                    Content="Update Instructor"
+                    Click="UpdateInstructor_BtnClick"
+                    Margin="380,-40,20,10"
+                    Style="{StaticResource ModernButtonStyle}" Width="120"/>
             <Button x:Name="BtnLogout"
                     Content="Logout"
                     Margin="500,-40,20,10"
@@ -170,19 +175,15 @@
                                     SelectionChanged="BatchFilterSelected"/>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Grid.Column="0" Margin="5">
-                    <TextBlock Text="Joining"
+                    <TextBlock Text="BatchID"
                              FontSize="15"
                              Foreground="{StaticResource TextPrimaryBrush}"
                              Margin="0,0,0,-25" />
-                    <ComboBox x:Name="MonthYearFilter"
-                            Width="248"
-                            Margin="10,5,5,5"
-                            Foreground="{StaticResource SecondaryBackgroundBrush}"
-                            ItemsSource="{Binding MonthYear_BF}"
-                            DisplayMemberPath="Batch"
-                            SelectedValuePath="Batch"
-                            SelectedValue="{Binding SelectedMonthYear, Mode=TwoWay}"
-                            SelectionChanged="BatchFilterSelected"/>
+                    <TextBox x:Name="BatchIDValue"
+                             Width="251"
+                             Height="40"
+                             Foreground="{StaticResource TextPrimaryBrush}"
+                             TextChanged="BatchFilterSelected"/>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Grid.Column="2" Margin="5">
                     <TextBlock Text="Last Exam"

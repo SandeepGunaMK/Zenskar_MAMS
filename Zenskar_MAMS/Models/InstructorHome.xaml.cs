@@ -53,6 +53,7 @@ namespace Zenskar_MAMS.Windows
             try
             {
                 var studentsList = new StudentsList("Instructor", _userName);
+                this.Close();
                 studentsList.ShowDialog();
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Zenskar_MAMS.Windows;
 
 namespace Zenskar_MAMS.Helpers
 {
@@ -11,6 +12,8 @@ namespace Zenskar_MAMS.Helpers
                 var loginWindow = new Windows.Login();
                 loginWindow.Show();
                 currentWindow.Close();
+                AdminHome._examDueMessageShown = false;
+                MasterHome._examDueMessageShown = false;
             }
         }
     }

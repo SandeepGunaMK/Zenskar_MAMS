@@ -174,7 +174,7 @@ namespace Zenskar_MAMS.Windows
             _userType = userType;
             _userName = userName;
             _columnFilters = new Dictionary<string, HashSet<string>>();
-
+            if(userType == "Instructor") { UpdateInstructor.Visibility = Visibility.Hidden; }            
             LoadStudents();
             
             ConfigureUserPermissions();
@@ -457,12 +457,16 @@ namespace Zenskar_MAMS.Windows
         {
             string filter = "1=1"; // always true, helps build conditions easily
 
-            if (SelectedMonthYear != "All")
+            //if (SelectedMonthYear != "All")
+            //{
+            //    DateTime selectedDate = DateTime.ParseExact(SelectedMonthYear, "MMMM yyyy", null);
+            //    string startDate = selectedDate.ToString("yyyy-MM-01");
+            //    string endDate = selectedDate.AddMonths(1).ToString("yyyy-MM-01");
+            //    filter += $" AND DateOfJoining >= '{startDate}' AND DateOfJoining < '{endDate}'";
+            //}
+            if(!string.IsNullOrEmpty(BatchIDValue.Text))
             {
-                DateTime selectedDate = DateTime.ParseExact(SelectedMonthYear, "MMMM yyyy", null);
-                string startDate = selectedDate.ToString("yyyy-MM-01");
-                string endDate = selectedDate.AddMonths(1).ToString("yyyy-MM-01");
-                filter += $" AND DateOfJoining >= '{startDate}' AND DateOfJoining < '{endDate}'";
+                filter += $" AND Batch_ID like '%{BatchIDValue.Text}%'";
             }
             if (SelectedLastExam != "All")
             {
@@ -755,10 +759,17 @@ namespace Zenskar_MAMS.Windows
             Master.SelectedValue= "All";
             Gender.SelectedValue= "All";
             Age.SelectedIndex= 0;
-            MonthYearFilter.SelectedValue = "All";  
+            BatchIDValue.Text = null;  
             LastExam.SelectedValue = "All";
             AgeValue.Text= null;
             BatchFilterSelected(sender, e);
+        }
+        private void UpdateInstructor_BtnClick(object sender, RoutedEventArgs e)
+        {
+            var dlg = new UpdateInstructor();
+            dlg.Owner = this;
+            dlg.ShowDialog();
+            LoadStudents();
         }
 
         private void ApplyColumnFilter(string columnName, IEnumerable<string> selectedValues)

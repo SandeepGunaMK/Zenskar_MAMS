@@ -1,5 +1,6 @@
 using Microsoft.Data.SqlClient;
 using MongoDB.Driver;
+using System;
 using System.Data;
 using System.Text;
 using System.Windows;
@@ -14,17 +15,22 @@ namespace Zenskar_MAMS.Windows
         private readonly string _userType;
         private DataTable _DBData;
 
+        // Static flag to track if message has been shown in this login session
+        public static bool _examDueMessageShown = false;
+
         public MasterHome(string userName)
         {
             //_dbContext = new DBContext();
             InitializeComponent();
             _userName = userName;
+
             LoadExamDueBatchs();
         }
 
         private void BtnStudentsList_Click(object sender, RoutedEventArgs e)
         {
             var studentsList = new StudentsList("Master", _userName);
+            this.Close();
             studentsList.ShowDialog();
         }
 
@@ -116,8 +122,17 @@ namespace Zenskar_MAMS.Windows
                     MessageBoxImage.Error);
             }
         }
-        private void DisplayExamDueBatchs(DataRow[] examDueStudents)
+         private void DisplayExamDueBatchs(DataRow[] examDueStudents)
         {
+            // Only show message box if it hasn't been shown in this login session
+            if (_examDueMessageShown)
+            {
+                return;
+            }
+
+            // Mark that message has been shown in this session
+            _examDueMessageShown = true;
+
             if (examDueStudents == null || examDueStudents.Length == 0)
             {
                 MessageBox.Show("No students are due for exams.", "Exam Due Batches",
@@ -142,6 +157,5 @@ namespace Zenskar_MAMS.Windows
 
             MessageBox.Show(sb.ToString(), "Exam Due Batches", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-
     }
 }
