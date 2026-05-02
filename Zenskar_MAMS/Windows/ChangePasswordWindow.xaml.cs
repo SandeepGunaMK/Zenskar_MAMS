@@ -2,6 +2,8 @@ using System;
 using System.Data;
 using System.Windows;
 using Microsoft.Data.SqlClient;
+using MongoDB.Driver;
+using Zenskar_MAMS.Helpers;
 
 namespace Zenskar_MAMS.Windows
 {
@@ -10,8 +12,6 @@ namespace Zenskar_MAMS.Windows
     /// </summary>
     public partial class ChangePasswordWindow : Window
     {
-        private readonly DBContext _db = new DBContext();
-
         public ChangePasswordWindow()
         {
             InitializeComponent();
@@ -57,16 +57,32 @@ namespace Zenskar_MAMS.Windows
             try
             {
                 // Fetch user record
-                var query = "SELECT Password FROM User_Table WHERE login_ID = @loginId";
-                var param = new SqlParameter[] { new SqlParameter("@loginId", loginId) };
-                var dt = _db.SelectData(query, param);
-                if (dt == null || dt.Rows.Count == 0)
+                #region OldQuery 
+                //var query = "SELECT Password FROM User_Table WHERE login_ID = @loginId";
+                //var param = new SqlParameter[] { new SqlParameter("@loginId", loginId) };
+                //var dt = _db.SelectData(query, param);
+                #endregion
+                #region MongoDb
+                var filter = Builders<UserTable>.Filter.Eq(x => x.Login_ID, loginId);
+                var projection = Builders<UserTable>.Projection.Include(x => x.Password);
+                var dt = CommonItems._mongoDBContext.Users
+                                    .Find(filter)
+                                    .Project<UserTable>(projection)
+                                    .ToList();
+
+
+                //var userData = CommonItems._mongoDBContext.Users
+                //                .Find(filter)
+                //                .Project<UserTable>(projection)
+                //                .ToList();
+                #endregion
+                if (dt == null || dt.Count == 0)
                 {
                     ShowError("Invalid Login ID.");
                     return;
                 }
 
-                var storedPassword = dt.Rows[0]["Password"]?.ToString();
+                var storedPassword = dt[0].Password;
                 if (storedPassword != currentPwd)
                 {
                     ShowError("Current password is incorrect.");
@@ -74,14 +90,20 @@ namespace Zenskar_MAMS.Windows
                 }
 
                 // Update password
-                var updateQuery = "UPDATE User_Table SET Password = @newPwd WHERE login_ID = @loginId";
-                var updateParams = new SqlParameter[] {
-                    new SqlParameter("@newPwd", newPwd),
-                    new SqlParameter("@loginId", loginId)
-                };
-
-                var rowsAffected = _db.UpdateData(updateQuery, updateParams);
-                if (rowsAffected > 0)
+                #region OldQuery                 
+                //var updateQuery = "UPDATE User_Table SET Password = @newPwd WHERE login_ID = @loginId";
+                //var updateParams = new SqlParameter[] {
+                //    new SqlParameter("@newPwd", newPwd),
+                //    new SqlParameter("@loginId", loginId)
+                //};
+                //var rowsAffected = _db.UpdateData(updateQuery, updateParams);
+                #endregion
+                #region MongoDb
+                //var filter = Builders<UserTable>.Filter.Eq(x => x.Login_ID, loginId);
+                var updates = Builders<UserTable>.Update.Set(x => x.Password, newPwd);
+                var result = CommonItems._mongoDBContext.Users.UpdateOne(filter, updates);
+                #endregion
+                if (result.ModifiedCount > 0)
                 {
                     MessageBox.Show("Password updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     this.Close();
