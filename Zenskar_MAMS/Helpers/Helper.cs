@@ -7,7 +7,9 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Zenskar_MAMS.Windows;
 
 namespace Zenskar_MAMS.Helpers
 {
@@ -77,6 +79,46 @@ namespace Zenskar_MAMS.Helpers
             }
 
             return dt;
+        }
+
+        public static string GetBatchID(string location, string belt, string insName)
+        {
+            string batchId = string.Empty;
+            var filter = Builders<StudentTable>.Filter.Eq(x => x.Location, location) 
+                & Builders<StudentTable>.Filter.Eq(x => x.Belt, belt)
+                & Builders<StudentTable>.Filter.Eq(x => x.InstructorName, insName);
+            var projection = Builders<StudentTable>.Projection.Include(x => x.Batch_ID);
+            var student = CommonItems._mongoDBContext.Students.Find(filter).Project<StudentTable>(projection).FirstOrDefault();            
+            batchId = student?.Batch_ID ?? string.Empty;
+            if (batchId == string.Empty)
+            {
+                var filter1 = Builders<StudentTable>.Filter.Empty;
+                var projection1 = Builders<StudentTable>.Projection.Include(x => x.Batch_ID);
+                var batchIds = CommonItems._mongoDBContext.Students
+                    .Find(filter1)
+                    .Project<StudentTable>(projection1).ToList();
+                batchIds.Sort((x, y) => string.Compare(x.Batch_ID, y.Batch_ID));
+                string maxBatchId = batchIds.LastOrDefault()?.Batch_ID ?? string.Empty;
+                batchId = IncrementBatchId(maxBatchId);
+            }
+            return batchId;
+        }
+        public static string IncrementBatchId(string input)
+        {
+            var match = Regex.Match(input, @"^(.*_)(\d+)$");
+
+            if (!match.Success)
+                throw new ArgumentException("Invalid batch format");
+
+            string prefix = match.Groups[1].Value;   // "zen_"
+            string numberPart = match.Groups[2].Value; // "001"
+
+            int number = int.Parse(numberPart);
+            number++;
+
+            string newNumber = number.ToString().PadLeft(numberPart.Length, '0');
+
+            return prefix + newNumber;
         }
     }
         public class LoginUser

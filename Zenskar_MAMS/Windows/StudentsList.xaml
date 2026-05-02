@@ -234,6 +234,16 @@
                   SelectionMode="Single"
                   SelectionUnit="FullRow">
             <DataGrid.Columns>
+                <DataGridTextColumn Header="Batch ID" 
+                  Binding="{Binding Batch_ID}" 
+                  Width="Auto">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <ContentControl Content="Batch ID"
+                          ContentTemplate="{StaticResource DataGridFilterHeaderTemplate}"/>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Name" 
                                   Binding="{Binding Name}" 
                                   Width="Auto">

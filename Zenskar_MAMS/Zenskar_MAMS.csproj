@@ -8,6 +8,12 @@
     <UseWPF>true</UseWPF>
     <EnableDefaultItems>false</EnableDefaultItems>
     <ApplicationIcon>Assets\Logo.ico</ApplicationIcon>
+    <SignAssembly>False</SignAssembly>
+    <Version>1.0.0.1</Version>
+    <Authors>SandeepGunaMK</Authors>
+    <Copyright>SandeepGunaMK</Copyright>
+    <Description>ZenskarManagementSystem</Description>
+    <PackageId>ZenskarManagementSystem</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

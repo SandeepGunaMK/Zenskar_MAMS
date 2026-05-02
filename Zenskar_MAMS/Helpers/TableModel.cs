@@ -27,6 +27,7 @@ namespace Zenskar_MAMS.Helpers
     {
         public ObjectId _id { get; set; }
         public int? Student_ID { get; set; }
+        public string Batch_ID { get; set; }
         public string Name { get; set; }
         public DateTime? DOB { get; set; }
         public int Age { get; set; }

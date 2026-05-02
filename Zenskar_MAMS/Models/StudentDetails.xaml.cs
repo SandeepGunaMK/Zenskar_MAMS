@@ -403,6 +403,7 @@ namespace Zenskar_MAMS.Windows
                     var studentDoc = new StudentTable
                     {
                         Student_ID = nextStudentId,
+                        Batch_ID = CommonItems.GetBatchID(CmbLocation.Text, CmbBelt.Text, CmbInstructor.Text),
                         Name = TxtName.Text ?? "Add Student Name",
                         DOB = DpDOB.SelectedDate ?? DateTime.Parse("01-01-0001 00:00:00"),
                         Age = int.Parse(TxtAge.Text),
