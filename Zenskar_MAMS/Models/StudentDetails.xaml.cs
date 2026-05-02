@@ -1,6 +1,7 @@
 using Azure.Core;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Data.SqlClient;
 using Microsoft.VisualBasic;
@@ -271,7 +272,10 @@ namespace Zenskar_MAMS.Windows
                     TxtContactNumber.Text = student["ContactNumber"].ToString();
                     TxtParentsName.Text = student["ParentsName"].ToString();
                     TxtMedicalConditions.Text = student["MedicalConditions"].ToString();
-                    
+                    TxtIdentificationMarks.Text = student["IdentificationMarks"].ToString();
+                    TxtAddress.Text = student["Address"].ToString();
+
+
                     if (student["LastExamDate"] != DBNull.Value)
                         DpLastExamDate.SelectedDate = Convert.ToDateTime(student["LastExamDate"]);
                     
@@ -399,21 +403,23 @@ namespace Zenskar_MAMS.Windows
                     var studentDoc = new StudentTable
                     {
                         Student_ID = nextStudentId,
-                        Name = TxtName.Text,
-                        DOB = DpDOB.SelectedDate.Value,
+                        Name = TxtName.Text ?? "Add Student Name",
+                        DOB = DpDOB.SelectedDate ?? DateTime.Parse("01-01-0001 00:00:00"),
                         Age = int.Parse(TxtAge.Text),
                         Gender = CmbGender.Text,
                         Location = CmbLocation.Text,
                         Belt = CmbBelt.Text,
                         InstructorName = CmbInstructor.Text,
                         MasterName = CmbMaster.Text,
-                        ContactNumber = TxtContactNumber.Text,
-                        ParentsName = TxtParentsName.Text,
-                        MedicalConditions = TxtMedicalConditions.Text ?? string.Empty,
-                        LastExamDate = DpLastExamDate.SelectedDate,
+                        ContactNumber = TxtContactNumber.Text ?? "Add Contact Number",
+                        ParentsName = TxtParentsName.Text ?? "Add Parents Name",
+                        MedicalConditions = TxtMedicalConditions.Text ?? "NA",
+                        Address = TxtAddress.Text ?? "NA",
+                        IdentificationMarks = TxtIdentificationMarks.Text ?? "NA",
+                        LastExamDate = DpLastExamDate.SelectedDate ?? DateTime.Parse("01-01-0001 00:00:00"),
                         Attempts = string.IsNullOrEmpty(TxtAttempts.Text) ? 0 : int.Parse(TxtAttempts.Text),
-                        DateOfJoining = DpDateOfJoining.SelectedDate.Value,
-                        Comments = TxtComments.Text ?? string.Empty,
+                        DateOfJoining = DpDateOfJoining.SelectedDate ?? DateTime.Parse("01-01-0001 00:00:00"),
+                        Comments = TxtComments.Text ?? "NA",
                         StudentStatus = "Active"
                     };
 
@@ -536,7 +542,9 @@ namespace Zenskar_MAMS.Windows
                         .Set(x => x.LastExamDate, (object)DpLastExamDate.SelectedDate ?? DBNull.Value)
                         .Set(x => x.Attempts, string.IsNullOrEmpty(TxtAttempts.Text) ? 0 : int.Parse(TxtAttempts.Text))
                         .Set(x => x.DateOfJoining, DpDateOfJoining.SelectedDate.Value)
-                        .Set(x => x.Comments, TxtComments.Text ?? string.Empty);
+                        .Set(x => x.Comments, TxtComments.Text ?? "NA")
+                        .Set(x => x.Address, TxtAddress.Text ?? "NA")
+                        .Set(x => x.IdentificationMarks, TxtIdentificationMarks.Text ?? "NA");
 
                     CommonItems._mongoDBContext.Students.UpdateOne(filter, update);
                     #endregion
@@ -577,7 +585,9 @@ namespace Zenskar_MAMS.Windows
                     LastExamDate = (object)DpLastExamDate.SelectedDate ?? DBNull.Value,
                     Attempts = string.IsNullOrEmpty(TxtAttempts.Text) ? 0 : int.Parse(TxtAttempts.Text),
                     DateOfJoining = DpDateOfJoining.SelectedDate.Value,
-                    Comments = TxtComments.Text ?? string.Empty
+                    Comments = TxtComments.Text ?? "NA",
+                    Address = TxtAddress.Text,
+                    TxtIdentificationMarks = TxtIdentificationMarks.Text
                 };
 
                 // Convert the updated data to JSON

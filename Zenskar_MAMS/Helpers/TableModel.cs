@@ -43,6 +43,8 @@ namespace Zenskar_MAMS.Helpers
         public DateTime? DateOfJoining { get; set; }
         public string Comments { get; set; }
         public string StudentStatus { get; set; }
+        public string IdentificationMarks { get; set; }
+        public string Address { get; set; }
     }
 
     public class AttendanceTable
