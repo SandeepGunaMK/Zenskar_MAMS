@@ -26,7 +26,19 @@ namespace Zenskar_MAMS.Windows
 
             LoadExamDueBatchs();
         }
-
+        private void BtnChangePassword_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dlg = new ChangePasswordWindow();
+                dlg.Owner = this;
+                dlg.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening Change Password dialog: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
         private void BtnStudentsList_Click(object sender, RoutedEventArgs e)
         {
             var studentsList = new StudentsList("Master", _userName);
