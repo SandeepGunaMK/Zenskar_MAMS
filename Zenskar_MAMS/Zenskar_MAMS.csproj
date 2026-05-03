@@ -32,6 +32,7 @@
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="DBContext.cs" />
+    <Compile Include="Helpers\AppUpdate.cs" />
     <Compile Include="Helpers\LogoutHelper.cs" />
     <Compile Include="Helpers\TableModel.cs" />
     <Compile Include="Helpers\Helper.cs" />
@@ -75,11 +76,17 @@
     <Content Include="Assets\ThathaPic.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="version.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Assets\GPTPromt.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Updater.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -98,10 +98,10 @@
                 </StackPanel>
 
                 <!-- Register Link -->
-                <StackPanel Grid.Row="2" 
+                <StackPanel Grid.Row="1" 
                           HorizontalAlignment="Center"
                           Orientation="Horizontal"
-                          Margin="0,0,0,20">
+                          Margin="0,373,0,-13" Grid.RowSpan="2">
                     <TextBlock Text="Don't have an account? "
                              Foreground="{StaticResource TextSecondaryBrush}"/>
                     <Button Content="Register"
@@ -109,7 +109,20 @@
                             Style="{StaticResource ModernButtonStyle}"
                             Background="Transparent"
                             Padding="5,0"
-                            Margin="5,0,0,0">
+                            Margin="5,-15,0,0" Height="20">
+                        <Button.Foreground>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="{StaticResource AccentCyan}" Offset="0"/>
+                                <GradientStop Color="{StaticResource AccentBlue}" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Foreground>
+                    </Button>
+                    <Button Content="Check For Updates"
+                            Click="BtnChkUpds_Click"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Background="Transparent"
+                            Padding="5,0"
+                            Margin="-175,15,0,0" Height="20">
                         <Button.Foreground>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                 <GradientStop Color="{StaticResource AccentCyan}" Offset="0"/>

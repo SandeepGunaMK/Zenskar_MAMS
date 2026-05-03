@@ -29,6 +29,11 @@ namespace Zenskar_MAMS.Windows
             }
         }
 
+        private async void BtnChkUpds_Click(object sender, RoutedEventArgs e)
+        {
+            var res = MessageBox.Show($"Click Ok to Check for Updates", "App Update", MessageBoxButton.OKCancel);
+            if (res == MessageBoxResult.OK){ await Helpers.AppUpdate.CheckForUpdateAsync(); }
+        }
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
             try
